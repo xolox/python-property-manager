@@ -45,4 +45,24 @@ setup(name="property-manager",
       install_requires=[
           'humanfriendly >= 1.19'
       ],
-      test_suite='property_manager.tests')
+      test_suite='property_manager.tests',
+      classifiers=[
+          'Development Status :: 5 - Production/Stable',
+          'Intended Audience :: Developers',
+          'Intended Audience :: Information Technology',
+          'Intended Audience :: System Administrators',
+          'License :: OSI Approved :: MIT License',
+          'Natural Language :: English',
+          'Operating System :: OS Independent',
+          'Programming Language :: Python',
+          'Programming Language :: Python :: 2',
+          'Programming Language :: Python :: 2.6',
+          'Programming Language :: Python :: 2.7',
+          'Programming Language :: Python :: 3',
+          'Programming Language :: Python :: 3.4',
+          'Topic :: Documentation :: Sphinx',
+          'Topic :: Software Development',
+          'Topic :: Software Development :: Documentation',
+          'Topic :: Software Development :: Libraries',
+          'Topic :: Software Development :: Libraries :: Python Modules',
+      ])
