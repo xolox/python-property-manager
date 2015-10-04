@@ -1,0 +1,8 @@
+# .coveragerc: Configuration file for coverage.py.
+# http://nedbatchelder.com/code/coverage/
+
+[run]
+source = property_manager
+omit = property_manager/tests.py
+
+# vim: ft=dosini
