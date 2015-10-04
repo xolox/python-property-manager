@@ -76,17 +76,17 @@ writable_property_ decorator:
 
 First let's see how the computed default value behaves:
 
-   >>> instance = WritablePropertyDemo()
-   >>> print(instance.change_me)
-   0.13692489329941815
-   >>> print(instance.change_me)
-   0.8664002331885933
+>>> instance = WritablePropertyDemo()
+>>> print(instance.change_me)
+0.13692489329941815
+>>> print(instance.change_me)
+0.8664002331885933
 
 As you can see the value is recomputed each time. Now we'll assign it a value:
 
-  >>> instance.change_me = 42
-  >>> print(instance.change_me)
-  42
+>>> instance.change_me = 42
+>>> print(instance.change_me)
+42
 
 From this point onwards `change_me` will be the number 42_.
 
@@ -108,25 +108,25 @@ The required_property_ decorator can be used to create required properties:
 What does it mean for a property to be required? Let's create an instance of
 the class and find out:
 
-   >>> instance = RequiredPropertyDemo()
-   Traceback (most recent call last):
-     File "property_manager/__init__.py", line 131, in __init__
-       raise TypeError("%s (%s)" % (msg, concatenate(missing_properties)))
-   TypeError: missing 1 required argument (important)
+>>> instance = RequiredPropertyDemo()
+Traceback (most recent call last):
+  File "property_manager/__init__.py", line 131, in __init__
+    raise TypeError("%s (%s)" % (msg, concatenate(missing_properties)))
+TypeError: missing 1 required argument (important)
 
 So the constructor of the class raises an exception when the property hasn't
 been given a value. We can give the property a value by providing keyword
 arguments to the constructor:
 
-   >>> instance = RequiredPropertyDemo(important=42)
-   >>> print(instance)
-   RequiredPropertyDemo(important=42)
+>>> instance = RequiredPropertyDemo(important=42)
+>>> print(instance)
+RequiredPropertyDemo(important=42)
 
 We can also assign a new value to the property:
 
-   >>> instance.important = 13
-   >>> print(instance)
-   RequiredPropertyDemo(important=13)
+>>> instance.important = 13
+>>> print(instance)
+RequiredPropertyDemo(important=13)
 
 Cached properties
 ~~~~~~~~~~~~~~~~~
@@ -153,38 +153,38 @@ Two kinds of cached properties are supported, we'll show both here:
 The properties created by the cached_property_ decorator compute the
 property's value on demand and cache the result:
 
-   >>> instance = CachedPropertyDemo()
-   >>> print(instance.expensive)
-   Calculating expensive property ..
-   0.763863180683
-   >>> print(instance.expensive)
-   0.763863180683
+>>> instance = CachedPropertyDemo()
+>>> print(instance.expensive)
+Calculating expensive property ..
+0.763863180683
+>>> print(instance.expensive)
+0.763863180683
 
 The property's cached value can be invalidated in order to recompute its value:
 
-   >>> del instance.expensive
-   >>> print(instance.expensive)
-   Calculating expensive property ..
-   0.396322737214
-   >>> print(instance.expensive)
-   0.396322737214
+>>> del instance.expensive
+>>> print(instance.expensive)
+Calculating expensive property ..
+0.396322737214
+>>> print(instance.expensive)
+0.396322737214
 
 Now that you understand cached_property_, explaining lazy_property_ is very
 simple: It simply doesn't support invalidation of cached values! Here's how
 that works in practice:
 
-   >>> instance.non_idempotent
-   Calculating non-idempotent property ..
-   0.27632566561900895
-   >>> instance.non_idempotent
-   0.27632566561900895
-   >>> del instance.non_idempotent
-   Traceback (most recent call last):
-     File "property_manager/__init__.py", line 499, in __delete__
-       raise AttributeError(msg % (obj.__class__.__name__, self.__name__))
-   AttributeError: 'CachedPropertyDemo' object attribute 'non_idempotent' is read-only
-   >>> instance.non_idempotent
-   0.27632566561900895
+>>> instance.non_idempotent
+Calculating non-idempotent property ..
+0.27632566561900895
+>>> instance.non_idempotent
+0.27632566561900895
+>>> del instance.non_idempotent
+Traceback (most recent call last):
+  File "property_manager/__init__.py", line 499, in __delete__
+    raise AttributeError(msg % (obj.__class__.__name__, self.__name__))
+AttributeError: 'CachedPropertyDemo' object attribute 'non_idempotent' is read-only
+>>> instance.non_idempotent
+0.27632566561900895
 
 The `PropertyManager` class
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
