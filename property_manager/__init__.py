@@ -296,23 +296,32 @@ class custom_property(property):
        type error raised by Python when required arguments are missing in a
        function call. Here's an example:
 
-       >>> from property_manager import *
-       >>> class Example(PropertyManager):
-       ...
-       ...     @required_property
-       ...     def important(self):
-       ...         "A very important attribute."
-       ...
-       ...     @mutable_property
-       ...     def optional(self):
-       ...         "A not so important attribute."
-       ...         return 13
-       ...
+       .. code-block:: python
+
+          from property_manager import PropertyManager, required_property, mutable_property
+
+          class Example(PropertyManager):
+
+              @required_property
+              def important(self):
+                  "A very important attribute."
+
+              @mutable_property
+              def optional(self):
+                  "A not so important attribute."
+                  return 13
+
+       Let's construct an instance of the class defined above:
+
        >>> Example()
        Traceback (most recent call last):
          File "property_manager/__init__.py", line 107, in __init__
            raise TypeError("%s (%s)" % (msg, concatenate(missing_properties)))
        TypeError: missing 1 required argument ('important')
+
+       As expected it complains that a required property hasn't been
+       initialized. Here's how it's supposed to work:
+
        >>> Example(important=42)
        Example(important=42, optional=13)
 
@@ -366,21 +375,29 @@ class custom_property(property):
         Here's an example of how the subclass constructor can be used to
         dynamically construct custom properties with specific options:
 
-        >>> from property_manager import custom_property
-        >>> class WritableCachedPropertyDemo(object):
-        >>>     @custom_property(cached=True, writable=True)
-        >>>     def customized_test_property(self):
-        >>>         return 42
+        .. code-block:: python
+
+           from property_manager import custom_property
+
+           class WritableCachedPropertyDemo(object):
+
+               @custom_property(cached=True, writable=True)
+               def customized_test_property(self):
+                   return 42
 
         The example above defines and uses a property whose computed value is
         cached and which supports assignment of new values. The example could
         have been made even simpler:
 
-        >>> from property_manager import cached_property
-        >>> class WritableCachedPropertyDemo(object):
-        >>>     @cached_property(writable=True)
-        >>>     def customized_test_property(self):
-        >>>         return 42
+        .. code-block:: python
+
+           from property_manager import cached_property
+
+           class WritableCachedPropertyDemo(object):
+
+               @cached_property(writable=True)
+               def customized_test_property(self):
+                   return 42
 
         Basically you can take any of the custom property classes defined in
         the :mod:`property_manager` module and call the class with keyword
