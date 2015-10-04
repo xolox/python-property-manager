@@ -70,7 +70,7 @@ except NameError:
     # Alias basestring to str in Python 3.
     basestring = str
 
-__version__ = '1.0'
+__version__ = '1.0.1'
 """Semi-standard module versioning."""
 
 NOTHING = object()
@@ -78,6 +78,11 @@ NOTHING = object()
 
 CUSTOM_PROPERTY_NOTE = compact("""
     The :attr:`{name}` property is a :class:`~{type}`.
+""")
+
+DYNAMIC_PROPERTY_NOTE = compact("""
+    The :attr:`{name}` property is a dynamically constructed
+    subclass of :class:`~{type}`.
 """)
 
 REQUIRED_PROPERTY_NOTE = compact("""
@@ -319,6 +324,14 @@ class custom_property(property):
        contains a secret that shouldn't be exposed or because the value is
        expensive to calculate) you can set :attr:`repr` to :data:`False` (it
        defaults to :data:`True`).
+
+    .. attribute:: dynamic
+
+       :data:`True` when the :class:`custom_property` subclass was dynamically
+       constructed by :func:`__new__()`, :data:`False` otherwise. Used by
+       :func:`compose_usage_notes()` to decide whether to link to the
+       documentation of the subclass or not (because it's impossible to link
+       to anonymous classes).
     """
 
     writable = False
@@ -326,6 +339,7 @@ class custom_property(property):
     required = False
     cached = False
     repr = True
+    dynamic = False
 
     def __new__(cls, *args, **options):
         """
@@ -375,6 +389,7 @@ class custom_property(property):
         if options:
             # Keyword arguments construct subclasses.
             name = args[0] if args else 'customized_property'
+            options['dynamic'] = True
             return type(name, (cls,), options)
         else:
             # Positional arguments construct instances.
@@ -431,8 +446,10 @@ class custom_property(property):
         .. _reStructuredText: https://en.wikipedia.org/wiki/ReStructuredText
         .. _Sphinx: http://sphinx-doc.org/
         """
-        dotted_path = "%s.%s" % (self.__class__.__module__, self.__class__.__name__)
-        notes = [format(CUSTOM_PROPERTY_NOTE, name=self.__name__, type=dotted_path)]
+        template = DYNAMIC_PROPERTY_NOTE if self.dynamic else CUSTOM_PROPERTY_NOTE
+        cls = custom_property if self.dynamic else self.__class__
+        dotted_path = "%s.%s" % (cls.__module__, cls.__name__)
+        notes = [format(template, name=self.__name__, type=dotted_path)]
         if self.required:
             notes.append(format(REQUIRED_PROPERTY_NOTE, name=self.__name__))
         if self.writable:
