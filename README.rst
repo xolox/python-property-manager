@@ -60,7 +60,8 @@ to the documentation_ for more detailed information.
 Writable properties
 ~~~~~~~~~~~~~~~~~~~
 
-Here's how you create a writable property with a computed default value:
+Writable properties with a computed default value are easy to create using the
+writable_property_ decorator:
 
 .. code-block:: python
 
@@ -87,12 +88,12 @@ As you can see the value is recomputed each time. Now we'll assign it a value:
   >>> print(instance.change_me)
   42
 
-From this point onwards `change_me` will be the number 42.
+From this point onwards `change_me` will be the number 42_.
 
 Required properties
 ~~~~~~~~~~~~~~~~~~~
 
-Here's how you create a required property:
+The required_property_ decorator can be used to create required properties:
 
 .. code-block:: python
 
@@ -149,7 +150,7 @@ Two kinds of cached properties are supported, we'll show both here:
            print("Calculating non-idempotent property ..")
            return random()
 
-The properties created by the `cached_property` decorator compute the
+The properties created by the cached_property_ decorator compute the
 property's value on demand and cache the result:
 
    >>> instance = CachedPropertyDemo()
@@ -168,7 +169,7 @@ The property's cached value can be invalidated in order to recompute its value:
    >>> print(instance.expensive)
    0.396322737214
 
-Now that you understand `cached_property`, explaining `lazy_property` is very
+Now that you understand cached_property_, explaining lazy_property_ is very
 simple: It simply doesn't support invalidation of cached values! Here's how
 that works in practice:
 
@@ -188,7 +189,7 @@ that works in practice:
 The `PropertyManager` class
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-When you define a class that inherits from the `PropertyManager` class the
+When you define a class that inherits from the PropertyManager_ class the
 following behavior is made available to your class:
 
 - Required properties raise an exception if they're not set.
@@ -200,8 +201,116 @@ following behavior is made available to your class:
   and values of all properties. Individual properties can easily be excluded
   from the `repr()` output.
 
-- The `clear_cached_properties()` method can be used to invalidate the cached
+- The `clear_cached_properties()`_ method can be used to invalidate the cached
   values of all cached properties at once.
+
+Similar projects
+----------------
+
+The Python Package Index contains quite a few packages that provide custom
+properties with similar semantics:
+
+`cached-property <https://pypi.python.org/pypi/cached-property>`_
+ My personal favorite until I wrote my own :-). This package provides several
+ cached property variants. It supports threading and time based cache
+ invalidation which `property-manager` doesn't support.
+
+`lazy-property <https://pypi.python.org/pypi/lazy-property>`_
+ This package provides two cached property variants: a read only property and
+ a writable property. Both variants cache computed values indefinitely.
+
+`memoized-property <https://pypi.python.org/pypi/memoized-property>`_
+ This package provides a single property variant which simply caches computed
+ values indefinitely.
+
+`property-caching <https://pypi.python.org/pypi/property-caching>`_
+ This package provides several cached property variants supporting class
+ properties, object properties and cache invalidation.
+
+`propertylib <https://pypi.python.org/pypi/propertylib>`_
+ This package uses metaclasses to implement an alternative syntax for defining
+ computed properties. It defines several property variants with semantics that
+ are similar to those defined by the `property-manager` package.
+
+`rwproperty <https://pypi.python.org/pypi/rwproperty>`_
+ This package implements computed, writable properties using an alternative
+ syntax to define the properties.
+
+Distinguishing features
+~~~~~~~~~~~~~~~~~~~~~~~
+
+Despite all of the existing Python packages discussed above I decided to create
+and publish the `property-manager` package because it was fun to get to know
+Python's `descriptor protocol`_ and I had several features in mind I couldn't
+find anywhere else:
+
+- A superclass that sets writable properties based on constructor arguments.
+
+- A superclass that understands required properties and raises a clear
+  exception if a required property is not properly initialized.
+
+- Clear disambiguation between lazy properties (whose computed value is cached
+  but cannot be invalidated because it would compromise internal state) and
+  cached properties (whose computed value is cached but can be invalidated to
+  compute a fresh value).
+
+- An easy way to quickly invalidate all cached properties of an object.
+
+- An easy way to change the semantics of custom properties, e.g. what if the
+  user wants a writable cached property? With `property-manager` it is trivial
+  to define new property variants by combining existing semantics:
+
+  .. code-block:: python
+
+     from property_manager import cached_property
+
+     class WritableCachedPropertyDemo(object):
+
+         @cached_property(writable=True)
+         def expensive_overridable_attribute(self):
+             """Expensive calculations go here."""
+
+  The example above creates a new anonymous class and then immediately uses
+  that to decorate the method. We could have given the class a name though:
+
+  .. code-block:: python
+
+     from property_manager import cached_property
+
+     writable_cached_property = cached_property(writable=True)
+
+     class WritableCachedPropertyDemo(object):
+
+         @writable_cached_property
+         def expensive_overridable_attribute(self):
+             """Expensive calculations go here."""
+
+  By giving the new property variant a name it can be reused. We can go one
+  step further and properly document the new property variant:
+
+  .. code-block:: python
+
+     from property_manager import cached_property
+
+     class writable_cached_property(cached_property):
+
+         """A cached property that supports assignment."""
+
+         writable = True
+
+     class WritableCachedPropertyDemo(object):
+
+         @writable_cached_property
+         def expensive_overridable_attribute(self):
+             """Expensive calculations go here."""
+
+  I've used computed properties for years in Python and over those years I've
+  learned that different Python projects have different requirements from
+  custom property variants. Defining every possible permutation up front is
+  madness, but I think that the flexibility with which the `property-manager`
+  package enables adaptation gets a long way. This was the one thing that
+  bothered me the most about all of the other Python packages that implement
+  property variants: They are not easily adapted to unanticipated use cases.
 
 Contact
 -------
@@ -220,13 +329,21 @@ This software is licensed under the `MIT license`_.
 
 
 .. External references:
+.. _42: https://en.wikipedia.org/wiki/42_(number)#The_Hitchhiker.27s_Guide_to_the_Galaxy
+.. _cached_property: https://property-manager.readthedocs.org/en/latest/api.html#property_manager.cached_property
+.. _clear_cached_properties(): https://property-manager.readthedocs.org/en/latest/api.html#property_manager.PropertyManager.clear_cached_properties
+.. _descriptor protocol: https://docs.python.org/2/howto/descriptor.html
 .. _documentation: https://property-manager.readthedocs.org
 .. _executor: https://executor.readthedocs.org/en/latest/
 .. _GitHub: https://github.com/xolox/python-property-manager
+.. _lazy_property: https://property-manager.readthedocs.org/en/latest/api.html#property_manager.lazy_property
 .. _MIT license: http://en.wikipedia.org/wiki/MIT_License
 .. _per user site-packages directory: https://www.python.org/dev/peps/pep-0370/
 .. _peter@peterodding.com: peter@peterodding.com
 .. _property: https://docs.python.org/2/library/functions.html#property
+.. _PropertyManager: https://property-manager.readthedocs.org/en/latest/api.html#property_manager.PropertyManager
 .. _PyPI: https://pypi.python.org/pypi/property-manager
 .. _Read the Docs: https://property-manager.readthedocs.org
+.. _required_property: https://property-manager.readthedocs.org/en/latest/api.html#property_manager.required_property
 .. _virtual environments: http://docs.python-guide.org/en/latest/dev/virtualenvs/
+.. _writable_property: https://property-manager.readthedocs.org/en/latest/api.html#property_manager.writable_property

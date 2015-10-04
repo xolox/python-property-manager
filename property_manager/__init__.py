@@ -84,7 +84,7 @@ except NameError:
     # Alias basestring to str in Python 3.
     basestring = str
 
-__version__ = '1.0.1'
+__version__ = '1.1'
 """Semi-standard module versioning."""
 
 NOTHING = object()
