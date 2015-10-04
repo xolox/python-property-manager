@@ -1,7 +1,7 @@
 # Makefile for property-manager.
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: October 3, 2015
+# Last Change: October 4, 2015
 # URL: https://github.com/xolox/python-property-manager
 
 WORKON_HOME ?= $(HOME)/.virtualenvs
@@ -57,7 +57,7 @@ publish:
 	make clean && python setup.py sdist upload
 
 clean:
-	rm -Rf *.egg *.egg-info .coverage build dist docs/build htmlcov
+	rm -Rf *.egg *.egg-info .cache .coverage .tox build dist docs/build htmlcov
 	find -depth -type d -name __pycache__ -exec rm -Rf {} \;
 	find -type f -name '*.pyc' -delete
 

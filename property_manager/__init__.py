@@ -7,10 +7,18 @@
 """
 Useful :class:`property` variants for Python programming.
 
+Introduction
+============
+
 The :mod:`property_manager` module defines several :class:`property` variants
 that implement Python's `descriptor protocol`_ to provide decorators that turn
-methods into computed properties with several additional features. Here's an
-overview of the predefined property variants and their supported operations:
+methods into computed properties with several additional features.
+
+Custom property types
+---------------------
+
+Here's an overview of the predefined property variants and their supported
+operations:
 
 ==========================  ================  =============  ==========
 Variant                     Can be assigned?  Can be reset?  Is cached?
@@ -38,6 +46,9 @@ variants relate to each other:
                          property_manager.cached_property
    :parts: 1
 
+The property manager superclass
+-------------------------------
+
 In addition to these :class:`property` variants the :mod:`property_manager`
 module also defines a :class:`PropertyManager` class which implements several
 related enhancements:
@@ -53,6 +64,9 @@ related enhancements:
   values of all properties. Individual properties can be omitted from the
   :func:`repr()` output by setting the :attr:`~custom_property.repr` option to
   :data:`False`.
+
+Classes
+=======
 
 .. _descriptor protocol: https://docs.python.org/2/howto/descriptor.html
 """
