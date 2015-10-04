@@ -84,7 +84,7 @@ except NameError:
     # Alias basestring to str in Python 3.
     basestring = str
 
-__version__ = '1.1'
+__version__ = '1.1.1'
 """Semi-standard module versioning."""
 
 NOTHING = object()
@@ -234,9 +234,12 @@ class PropertyManager(object):
         """
         fields = []
         for name in self.find_properties(repr=True):
-            value = getattr(self, name, NOTHING)
-            if value is not NOTHING:
-                fields.append("%s=%r" % (name, value))
+            # Check if the property is defined by a subclass.
+            if not hasattr(PropertyManager, name):
+                # Check if the property has a value.
+                value = getattr(self, name, NOTHING)
+                if value is not NOTHING:
+                    fields.append("%s=%r" % (name, value))
         return "%s(%s)" % (self.__class__.__name__, ", ".join(fields))
 
 
