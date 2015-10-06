@@ -1,7 +1,7 @@
 # Tests of custom properties for Python programming.
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: October 4, 2015
+# Last Change: October 6, 2015
 # URL: https://property-manager.readthedocs.org
 
 """Automated tests for the :mod:`property_manager` module."""
@@ -307,7 +307,13 @@ class PropertyInspector(object):
                                       name='documented_property',
                                       type="%s.%s" % (self.property_type.__module__,
                                                       self.property_type.__name__))
-        assert custom_property_note in documentation
+        if DocumentationTest.documented_property.usage_notes:
+            assert custom_property_note in documentation
+        else:
+            assert custom_property_note not in documentation
+            # If CUSTOM_PROPERTY_NOTE is not present we assume that none of the
+            # other usage notes will be present either.
+            return
         # Test that the sentence added for writable properties is present when applicable.
         assert self.property_type.writable == (WRITABLE_PROPERTY_NOTE in documentation)
         # Test that the sentence added for cached properties is present when applicable.

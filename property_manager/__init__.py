@@ -1,7 +1,7 @@
 # Useful property variants for Python programming.
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: October 4, 2015
+# Last Change: October 6, 2015
 # URL: https://property-manager.readthedocs.org
 
 """
@@ -84,7 +84,7 @@ except NameError:
     # Alias basestring to str in Python 3.
     basestring = str
 
-__version__ = '1.1.1'
+__version__ = '1.2'
 """Semi-standard module versioning."""
 
 NOTHING = object()
@@ -342,6 +342,13 @@ class custom_property(property):
        >>> Example(important=42)
        Example(important=42, optional=13)
 
+    .. attribute:: usage_notes
+
+       By default this attribute is :data:`True` (the default) which means
+       :func:`inject_usage_notes()` is used to inject usage notes into the
+       documentation of the property. You can set this attribute to
+       :data:`False` to disable :func:`inject_usage_notes()`.
+
     .. attribute:: repr
 
        By default :func:`PropertyManager.__repr__()` includes the names and
@@ -366,6 +373,7 @@ class custom_property(property):
     cached = False
     repr = True
     dynamic = False
+    usage_notes = True
 
     def __new__(cls, *args, **options):
         """
@@ -461,7 +469,7 @@ class custom_property(property):
         semantics and appends this to the property's documentation. If the
         property doesn't have documentation it will not be added.
         """
-        if self.__doc__ and isinstance(self.__doc__, basestring):
+        if self.usage_notes and self.__doc__ and isinstance(self.__doc__, basestring):
             notes = self.compose_usage_notes()
             if notes:
                 self.__doc__ = "\n\n".join([
