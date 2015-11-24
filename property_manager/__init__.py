@@ -1,7 +1,7 @@
 # Useful property variants for Python programming.
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: October 6, 2015
+# Last Change: November 25, 2015
 # URL: https://property-manager.readthedocs.org
 
 """
@@ -72,6 +72,7 @@ Classes
 """
 
 # Standard library modules.
+import os
 import textwrap
 
 # External dependencies.
@@ -84,7 +85,7 @@ except NameError:
     # Alias basestring to str in Python 3.
     basestring = str
 
-__version__ = '1.2'
+__version__ = '1.3'
 """Semi-standard module versioning."""
 
 NOTHING = object()
@@ -97,6 +98,11 @@ CUSTOM_PROPERTY_NOTE = compact("""
 DYNAMIC_PROPERTY_NOTE = compact("""
     The :attr:`{name}` property is a dynamically constructed
     subclass of :class:`~{type}`.
+""")
+
+ENVIRONMENT_PROPERTY_NOTE = compact("""
+    If the environment variable ``${variable}`` is set it overrides the
+    computed value of this property.
 """)
 
 REQUIRED_PROPERTY_NOTE = compact("""
@@ -342,12 +348,19 @@ class custom_property(property):
        >>> Example(important=42)
        Example(important=42, optional=13)
 
+    .. attribute:: environment_variable
+
+       If this attribute is set to the name of an environment variable the
+       property's value will default to the value of the environment variable.
+       If the environment variable isn't set the property falls back to its
+       computed value.
+
     .. attribute:: usage_notes
 
-       By default this attribute is :data:`True` (the default) which means
-       :func:`inject_usage_notes()` is used to inject usage notes into the
-       documentation of the property. You can set this attribute to
-       :data:`False` to disable :func:`inject_usage_notes()`.
+       If this attribute is :data:`True` (the default) :func:`inject_usage_notes()`
+       is used to inject usage notes into the documentation of the property.
+       You can set this attribute to :data:`False` to disable
+       :func:`inject_usage_notes()`.
 
     .. attribute:: repr
 
@@ -374,6 +387,7 @@ class custom_property(property):
     repr = True
     dynamic = False
     usage_notes = True
+    environment_variable = None
 
     def __new__(cls, *args, **options):
         """
@@ -385,8 +399,9 @@ class custom_property(property):
                      subclass (defaults to 'customized_property').
         :param options: Each keyword argument gives the name of an option
                         (:attr:`writable`, :attr:`resettable`, :attr:`cached`,
-                        :attr:`required`, :attr:`repr`) and the value to use
-                        for that option (:data:`True` or :data:`False`).
+                        :attr:`required`, :attr:`environment_variable`,
+                        :attr:`repr`) and the value to use for that option
+                        (:data:`True`, :data:`False` or a string).
         :returns: A dynamically constructed subclass of
                   :class:`custom_property` with the given options.
 
@@ -492,6 +507,8 @@ class custom_property(property):
         cls = custom_property if self.dynamic else self.__class__
         dotted_path = "%s.%s" % (cls.__module__, cls.__name__)
         notes = [format(template, name=self.__name__, type=dotted_path)]
+        if self.environment_variable:
+            notes.append(format(ENVIRONMENT_PROPERTY_NOTE, variable=self.environment_variable))
         if self.required:
             notes.append(format(REQUIRED_PROPERTY_NOTE, name=self.__name__))
         if self.writable:
@@ -521,6 +538,13 @@ class custom_property(property):
             if self.writable or self.cached:
                 # Check if a value has been assigned or cached.
                 value = obj.__dict__.get(self.__name__, NOTHING)
+                if value is not NOTHING:
+                    return value
+            # Check if the property has an environment variable. We do this
+            # after checking for an assigned value so that the `writable' and
+            # `environment_variable' options can be used together.
+            if self.environment_variable:
+                value = os.environ.get(self.environment_variable, NOTHING)
                 if value is not NOTHING:
                     return value
             # Compute the property's value.

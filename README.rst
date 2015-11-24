@@ -66,7 +66,7 @@ writable_property_ decorator:
 .. code-block:: python
 
    from random import random
-   from property_manager import PropertyManager, writable_property
+   from property_manager import writable_property
 
    class WritablePropertyDemo(object):
 
@@ -88,7 +88,17 @@ As you can see the value is recomputed each time. Now we'll assign it a value:
 >>> print(instance.change_me)
 42
 
-From this point onwards `change_me` will be the number 42_.
+From this point onwards `change_me` will be the number 42_ and it's impossible
+to revert back to the computed value:
+
+>>> delattr(instance, 'change_me')
+Traceback (most recent call last):
+  File "property_manager/__init__.py", line 584, in __delete__
+    raise AttributeError(msg % (obj.__class__.__name__, self.__name__))
+AttributeError: 'WritablePropertyDemo' object attribute 'change_me' is read-only
+
+If you're looking for a property that supports both assignment and deletion
+(clearing the assigned value) you can use mutable_property_.
 
 Required properties
 ~~~~~~~~~~~~~~~~~~~
@@ -185,6 +195,57 @@ Traceback (most recent call last):
 AttributeError: 'CachedPropertyDemo' object attribute 'non_idempotent' is read-only
 >>> instance.non_idempotent
 0.27632566561900895
+
+Properties based on environment variables
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The constructor of the custom_property_ class (and its subclasses) accepts the
+keyword argument `environment_variable` which can be provided to get the
+property's value from the environment:
+
+.. code-block:: python
+
+   from random import random
+   from property_manager import mutable_property
+
+   class EnvironmentPropertyDemo(object):
+
+       @mutable_property(environment_variable='WHATEVER_YOU_WANT')
+       def environment_based(self):
+           return 'some-default-value'
+
+By default the property's value is computed as expected:
+
+>>> instance = EnvironmentPropertyDemo()
+>>> print(instance.environment_based)
+some-default-value
+
+When the environment variable is set it overrides the computed value:
+
+>>> os.environ['WHATEVER_YOU_WANT'] = '42'
+>>> print(instance.environment_based)
+42
+
+Assigning a value to the property overrides the value from the environment:
+
+>>> instance.environment_based = '13'
+>>> print(instance.environment_based)
+13
+
+Deleting the property clears the assigned value so that the property falls back
+to the environment:
+
+>>> delattr(instance, 'environment_based')
+>>> print(instance.environment_based)
+42
+
+If we now clear the environment variable as well then the property falls back
+to the computed value:
+
+>>> os.environ.pop('WHATEVER_YOU_WANT')
+'42'
+>>> print(instance.environment_based)
+some-default-value
 
 The `PropertyManager` class
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -332,12 +393,14 @@ This software is licensed under the `MIT license`_.
 .. _42: https://en.wikipedia.org/wiki/42_(number)#The_Hitchhiker.27s_Guide_to_the_Galaxy
 .. _cached_property: https://property-manager.readthedocs.org/en/latest/api.html#property_manager.cached_property
 .. _clear_cached_properties(): https://property-manager.readthedocs.org/en/latest/api.html#property_manager.PropertyManager.clear_cached_properties
+.. _custom_property: https://property-manager.readthedocs.org/en/latest/api.html#property_manager.custom_property
 .. _descriptor protocol: https://docs.python.org/2/howto/descriptor.html
 .. _documentation: https://property-manager.readthedocs.org
 .. _executor: https://executor.readthedocs.org/en/latest/
 .. _GitHub: https://github.com/xolox/python-property-manager
 .. _lazy_property: https://property-manager.readthedocs.org/en/latest/api.html#property_manager.lazy_property
 .. _MIT license: http://en.wikipedia.org/wiki/MIT_License
+.. _mutable_property: https://property-manager.readthedocs.org/en/latest/api.html#property_manager.mutable_property
 .. _per user site-packages directory: https://www.python.org/dev/peps/pep-0370/
 .. _peter@peterodding.com: peter@peterodding.com
 .. _property: https://docs.python.org/2/library/functions.html#property

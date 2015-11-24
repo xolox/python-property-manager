@@ -1,12 +1,13 @@
 # Tests of custom properties for Python programming.
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: October 6, 2015
+# Last Change: November 25, 2015
 # URL: https://property-manager.readthedocs.org
 
 """Automated tests for the :mod:`property_manager` module."""
 
 # Standard library modules.
+import os
 import random
 import unittest
 
@@ -15,19 +16,21 @@ from humanfriendly import format
 
 # Modules included in our package.
 from property_manager import (
-    cached_property,
     CACHED_PROPERTY_NOTE,
-    custom_property,
     CUSTOM_PROPERTY_NOTE,
-    lazy_property,
-    mutable_property,
-    PropertyManager,
-    required_property,
+    DYNAMIC_PROPERTY_NOTE,
+    ENVIRONMENT_PROPERTY_NOTE,
     REQUIRED_PROPERTY_NOTE,
     RESETTABLE_CACHED_PROPERTY_NOTE,
     RESETTABLE_WRITABLE_PROPERTY_NOTE,
-    writable_property,
     WRITABLE_PROPERTY_NOTE,
+    PropertyManager,
+    cached_property,
+    custom_property,
+    lazy_property,
+    mutable_property,
+    required_property,
+    writable_property,
 )
 
 
@@ -36,7 +39,13 @@ class PropertyManagerTestCase(unittest.TestCase):
     """Container for the :mod:`property_manager` test suite."""
 
     def test_builtin_property(self):
-        """Test that our assumptions about the behavior of :class:`property` are correct."""
+        """
+        Test that our assumptions about the behavior of :class:`property` are correct.
+
+        This test helps to confirm that :class:`PropertyInspector` (on which
+        other tests are based) shows sane behavior regardless of whether a
+        custom property is inspected.
+        """
         class NormalPropertyTest(object):
             @property
             def normal_test_property(self):
@@ -130,6 +139,37 @@ class PropertyManagerTestCase(unittest.TestCase):
             assert p.is_resettable
             p.check_usage_notes()
 
+    def test_environment_property(self):
+        """Test that custom properties can be based on environment variables."""
+        variable_name = 'PROPERTY_MANAGER_TEST_VALUE'
+
+        class EnvironmentPropertyTest(object):
+            @mutable_property(environment_variable=variable_name)
+            def environment_test_property(self):
+                return str(random.random())
+
+        with PropertyInspector(EnvironmentPropertyTest, 'environment_test_property') as p:
+            # Make sure the property's value can be overridden using the
+            # expected environment variable.
+            value_from_environment = str(random.random())
+            os.environ[variable_name] = value_from_environment
+            assert p.value == value_from_environment
+            # Make sure assignment overrides the value from the environment.
+            value_from_assignment = str(random.random())
+            assert value_from_assignment != value_from_environment
+            p.value = value_from_assignment
+            assert p.value == value_from_assignment
+            # Make sure the assigned value can be cleared so that the
+            # property's value falls back to the environment variable.
+            p.delete()
+            assert p.value == value_from_environment
+            # Make sure the property's value falls back to the computed value
+            # if the environment variable isn't set.
+            os.environ.pop(variable_name)
+            assert p.value != value_from_assignment
+            assert p.value != value_from_environment
+            p.check_usage_notes()
+
     def test_property_manager_repr(self):
         """Test :func:`repr()` rendering of :class:`PropertyManager` objects."""
         class RepresentationTest(PropertyManager):
@@ -188,7 +228,9 @@ class PropertyManagerTestCase(unittest.TestCase):
         # Invalidate the values of cached properties.
         instance.counter *= 2
         instance.clear_cached_properties()
+        # Make sure the value of the lazy property *wasn't* cleared.
         assert instance.lazy == (42 * 2)
+        # Make sure the value of the cached property *was* cleared.
         assert instance.cached == (42 * 2 * 2)
 
 
@@ -225,6 +267,15 @@ class PropertyInspector(object):
     def value(self):
         """Get the value of the property from the owner's instance."""
         return getattr(self.owner_object, self.property_name)
+
+    @value.setter
+    def value(self, new_value):
+        """Set the value of the property on the owner's instance."""
+        setattr(self.owner_object, self.property_name, new_value)
+
+    def delete(self):
+        """Delete the (value of the) property."""
+        delattr(self.owner_object, self.property_name)
 
     @property
     def is_recognizable(self):
@@ -303,10 +354,11 @@ class PropertyInspector(object):
                 return random.random()
         documentation = DocumentationTest.documented_property.__doc__
         # Test that the sentence added for custom properties is always present.
-        custom_property_note = format(CUSTOM_PROPERTY_NOTE,
-                                      name='documented_property',
-                                      type="%s.%s" % (self.property_type.__module__,
-                                                      self.property_type.__name__))
+        cls = custom_property if self.property_type.dynamic else self.property_type
+        custom_property_note = format(
+            DYNAMIC_PROPERTY_NOTE if self.property_type.dynamic else CUSTOM_PROPERTY_NOTE,
+            name='documented_property', type="%s.%s" % (cls.__module__, cls.__name__),
+        )
         if DocumentationTest.documented_property.usage_notes:
             assert custom_property_note in documentation
         else:
@@ -328,3 +380,6 @@ class PropertyInspector(object):
         # Test that the sentence added for required properties is present when applicable.
         required_property_note = format(REQUIRED_PROPERTY_NOTE, name='documented_property')
         assert self.property_type.required == (required_property_note in documentation)
+        # Test that the sentence added for environment properties is present when applicable.
+        environment_note = format(ENVIRONMENT_PROPERTY_NOTE, variable=self.property_type.environment_variable)
+        assert bool(self.property_type.environment_variable) == (environment_note in documentation)
