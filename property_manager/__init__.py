@@ -243,8 +243,8 @@ class PropertyManager(object):
         property_type = getattr(self.__class__, name, None)
         if isinstance(property_type, property):
             if options:
-                return all(getattr(property_type, n, None) == v
-                           or n == 'repr' and v is True and getattr(property_type, n, None) is not False
+                return all(getattr(property_type, n, None) == v or
+                           n == 'repr' and v is True and getattr(property_type, n, None) is not False
                            for n, v in options.items())
             else:
                 return True
