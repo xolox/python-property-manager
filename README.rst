@@ -386,7 +386,7 @@ License
 
 This software is licensed under the `MIT license`_.
 
-© 2015 Peter Odding.
+© 2016 Peter Odding.
 
 
 .. External references:
