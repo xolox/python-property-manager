@@ -1,7 +1,7 @@
 # Useful property variants for Python programming.
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: May 31, 2016
+# Last Change: June 1, 2016
 # URL: https://property-manager.readthedocs.org
 
 """
@@ -86,7 +86,7 @@ except NameError:
     # Alias basestring to str in Python 3.
     basestring = str
 
-__version__ = '1.4'
+__version__ = '1.5'
 """Semi-standard module versioning."""
 
 SPHINX_ACTIVE = 'sphinx' in sys.modules
@@ -159,6 +159,37 @@ RESETTABLE_WRITABLE_PROPERTY_NOTE = compact("""
     To reset it to its default (computed) value you can use :keyword:`del` or
     :func:`delattr()`.
 """)
+
+
+def set_property(obj, name, value):
+    """
+    Set or override the value of a property.
+
+    :param obj: The object that owns the property.
+    :param name: The name of the property (a string).
+    :param value: The new value for the property.
+
+    This function directly modifies the :attr:`~object.__dict__` of the given
+    object and as such it avoids any interaction with object properties. This
+    is intentional: :func:`set_property()` is meant to be used by extensions of
+    the `property-manager` project and by user defined setter methods.
+    """
+    obj.__dict__[name] = value
+
+
+def clear_property(obj, name):
+    """
+    Clear the assigned or cached value of a property.
+
+    :param obj: The object that owns the property.
+    :param name: The name of the property (a string).
+
+    This function directly modifies the :attr:`~object.__dict__` of the given
+    object and as such it avoids any interaction with object properties. This
+    is intentional: :func:`clear_property()` is meant to be used by extensions
+    of the `property-manager` project and by user defined deleter methods.
+    """
+    obj.__dict__.pop(name, None)
 
 
 class PropertyManager(object):
@@ -579,7 +610,7 @@ class custom_property(property):
             value = self.func(obj)
             if self.cached:
                 # Cache the computed value.
-                obj.__dict__[self.__name__] = value
+                set_property(obj, self.__name__, value)
             return value
 
     def __set__(self, obj, value):
@@ -594,7 +625,7 @@ class custom_property(property):
         if not self.writable:
             msg = "%r object attribute %r is read-only"
             raise AttributeError(msg % (obj.__class__.__name__, self.__name__))
-        obj.__dict__[self.__name__] = value
+        set_property(obj, self.__name__, value)
 
     def __delete__(self, obj):
         """
@@ -610,7 +641,7 @@ class custom_property(property):
         if not self.resettable:
             msg = "%r object attribute %r is read-only"
             raise AttributeError(msg % (obj.__class__.__name__, self.__name__))
-        obj.__dict__.pop(self.__name__, None)
+        clear_property(obj, self.__name__)
 
 
 class writable_property(custom_property):
