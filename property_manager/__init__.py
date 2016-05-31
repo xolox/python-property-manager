@@ -1,7 +1,7 @@
 # Useful property variants for Python programming.
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: November 25, 2015
+# Last Change: May 31, 2016
 # URL: https://property-manager.readthedocs.org
 
 """
@@ -73,10 +73,11 @@ Classes
 
 # Standard library modules.
 import os
+import sys
 import textwrap
 
 # External dependencies.
-from humanfriendly import compact, concatenate, format, pluralize
+from humanfriendly import coerce_boolean, compact, concatenate, format, pluralize
 
 try:
     # Check if `basestring' is defined (Python 2).
@@ -85,8 +86,35 @@ except NameError:
     # Alias basestring to str in Python 3.
     basestring = str
 
-__version__ = '1.3'
+__version__ = '1.4'
 """Semi-standard module versioning."""
+
+SPHINX_ACTIVE = 'sphinx' in sys.modules
+"""
+:data:`True` when Sphinx_ is running, :data:`False` otherwise.
+
+We detect whether Sphinx is running by checking for the presence of the
+'sphinx' key in :data:`sys.modules`. The result determines the default
+value of :data:`USAGE_NOTES_ENABLED`.
+"""
+
+USAGE_NOTES_VARIABLE = 'PROPERTY_MANAGER_USAGE_NOTES'
+"""The name of the environment variable that controls whether usage notes are enabled (a string)."""
+
+USAGE_NOTES_ENABLED = (coerce_boolean(os.environ[USAGE_NOTES_VARIABLE])
+                       if USAGE_NOTES_VARIABLE in os.environ
+                       else SPHINX_ACTIVE)
+"""
+:data:`True` if usage notes are enabled, :data:`False` otherwise.
+
+This defaults to the environment variable :data:`USAGE_NOTES_VARIABLE` (coerced
+using :func:`~humanfriendly.coerce_boolean()`) when available, otherwise
+:data:`SPHINX_ACTIVE` determines the default value.
+
+Usage notes are only injected when Sphinx is running because of performance.
+It's nothing critical of course, but modifying hundreds or thousands of
+docstrings that no one is going to look at seems rather pointless :-).
+"""
 
 NOTHING = object()
 """A unique object instance used to detect missing attributes."""
@@ -463,7 +491,8 @@ class custom_property(property):
         :raises: :exc:`~exceptions.ValueError` when the first positional
                  argument is not callable (e.g. a function).
 
-        Automatically calls :func:`inject_usage_notes()` during initialization.
+        Automatically calls :func:`inject_usage_notes()` during initialization
+        (only if :data:`USAGE_NOTES_ENABLED` is :data:`True`).
         """
         if not callable(func):
             msg = "Expected to decorate callable, got %r instead!"
@@ -474,6 +503,7 @@ class custom_property(property):
             self.__module__ = func.__module__
             self.__name__ = func.__name__
             self.func = func
+        if USAGE_NOTES_ENABLED:
             self.inject_usage_notes()
 
     def inject_usage_notes(self):

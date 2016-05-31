@@ -1,7 +1,7 @@
 # Tests of custom properties for Python programming.
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: November 25, 2015
+# Last Change: May 31, 2016
 # URL: https://property-manager.readthedocs.org
 
 """Automated tests for the :mod:`property_manager` module."""
@@ -37,6 +37,11 @@ from property_manager import (
 class PropertyManagerTestCase(unittest.TestCase):
 
     """Container for the :mod:`property_manager` test suite."""
+
+    def setUp(self):
+        """Automatically set USAGE_NOTES_ENABLED to True."""
+        import property_manager
+        property_manager.USAGE_NOTES_ENABLED = True
 
     def test_builtin_property(self):
         """
