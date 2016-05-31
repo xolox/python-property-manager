@@ -289,133 +289,131 @@ class custom_property(property):
     .. _descriptor protocol: https://docs.python.org/2/howto/descriptor.html
 
     The additional features are controlled by attributes defined on the
-    :class:`custom_property` class. These attributes are intended to be changed
-    by the constructor (:func:`__new__()`) and/or classes that inherit from
-    :class:`custom_property`:
+    :class:`custom_property` class. These attributes (documented below) are
+    intended to be changed by the constructor (:func:`__new__()`) and/or
+    classes that inherit from :class:`custom_property`.
+    """
 
-    .. attribute:: writable
+    cached = False
+    """
+    If this attribute is set to :data:`True` the property's value is computed
+    only once and then cached in an object's :attr:`~object.__dict__`. The next
+    time you access the attribute's value the cached value is automatically
+    returned. By combining the :attr:`cached` and :attr:`resettable` options
+    you get a cached property whose cached value can be cleared. If the value
+    should never be recomputed then don't enable the :attr:`resettable`
+    option.
 
-       If this attribute is set to :data:`True` (it defaults to :data:`False`)
-       the property supports assignment. The assigned value is stored in the
-       :attr:`~object.__dict__` of the object that owns the property.
+    :see also: :class:`cached_property` and :class:`lazy_property`.
+    """
 
-       :see also: :class:`writable_property`, :class:`mutable_property` and
-                  :class:`required_property`.
+    dynamic = False
+    """
+    :data:`True` when the :class:`custom_property` subclass was dynamically
+    constructed by :func:`__new__()`, :data:`False` otherwise. Used by
+    :func:`compose_usage_notes()` to decide whether to link to the
+    documentation of the subclass or not (because it's impossible to link to
+    anonymous classes).
+    """
 
-       A relevant note about how Python looks up attributes: When an attribute
-       is looked up and exists in an object's :attr:`~object.__dict__` Python
-       ignores any property (descriptor) by the same name and immediately
-       returns the value that was found in the object's
-       :attr:`~object.__dict__`.
+    environment_variable = None
+    """
+    If this attribute is set to the name of an environment variable the
+    property's value will default to the value of the environment variable. If
+    the environment variable isn't set the property falls back to its computed
+    value.
+    """
 
-    .. attribute:: resettable
+    repr = True
+    """
+    By default :func:`PropertyManager.__repr__()` includes the names and values
+    of all properties that aren't :data:`None` in :func:`repr()` output. If you
+    want to omit a certain property you can set :attr:`repr` to :data:`False`.
 
-       If this attribute is set to :data:`True` (it defaults to :data:`False`)
-       the property can be reset to its default or computed value using
-       :keyword:`del` and :func:`delattr()`. This works by removing the
-       assigned or cached value from the object's :attr:`~object.__dict__`.
+    Examples of why you would want to do this include property values that
+    contain secrets or are expensive to calculate and data structures with
+    cycles which cause :func:`repr()` to die a slow and horrible death :-).
+    """
 
-       :see also: :class:`mutable_property` and :class:`cached_property`.
+    required = False
+    """
+    If this attribute is set to :data:`True` the property requires a value to
+    be set during the initialization of the object that owns the property. For
+    this to work the class that owns the property needs to inherit from
+    :class:`PropertyManager`.
 
-    .. attribute:: cached
+    :see also: :class:`required_property`.
 
-       If this attribute is set to :data:`True` (it defaults to :data:`False`)
-       the property's value is computed only once and then cached in an
-       object's :attr:`~object.__dict__`. The next time you access the
-       attribute's value the cached value is automatically returned. By
-       combining the :attr:`cached` and :attr:`resettable` options you get a
-       cached property whose cached value can be cleared. If the value should
-       never be recomputed then don't enable the :attr:`resettable` option.
+    The constructor of :class:`PropertyManager` will ensure that required
+    properties are set to values that aren't :data:`None`. Required properties
+    must be set by providing keyword arguments to the constructor of the class
+    that inherits from :class:`PropertyManager`. When
+    :func:`PropertyManager.__init__()` notices that required properties haven't
+    been set it raises a :exc:`~exceptions.TypeError` similar to the type error
+    raised by Python when required arguments are missing in a function call.
+    Here's an example:
 
-       :see also: :class:`cached_property` and :class:`lazy_property`.
+    .. code-block:: python
 
-    .. attribute:: required
+       from property_manager import PropertyManager, required_property, mutable_property
 
-       If this attribute is set to :data:`True` (it defaults to :data:`False`)
-       the property requires a value to be set during the initialization of the
-       object that owns the property. For this to work the class that owns the
-       property needs to inherit from :class:`PropertyManager`.
+       class Example(PropertyManager):
 
-       :see also: :class:`required_property`.
+           @required_property
+           def important(self):
+               "A very important attribute."
 
-       The constructor of :class:`PropertyManager` will ensure that required
-       properties are set to values that aren't :data:`None`. Required
-       properties must be set by providing keyword arguments to the constructor
-       of the class that inherits from :class:`PropertyManager`. When
-       :func:`PropertyManager.__init__()` notices that required properties
-       haven't been set it raises a :exc:`~exceptions.TypeError` similar to the
-       type error raised by Python when required arguments are missing in a
-       function call. Here's an example:
+           @mutable_property
+           def optional(self):
+               "A not so important attribute."
+               return 13
 
-       .. code-block:: python
+    Let's construct an instance of the class defined above:
 
-          from property_manager import PropertyManager, required_property, mutable_property
+    >>> Example()
+    Traceback (most recent call last):
+      File "property_manager/__init__.py", line 107, in __init__
+        raise TypeError("%s (%s)" % (msg, concatenate(missing_properties)))
+    TypeError: missing 1 required argument ('important')
 
-          class Example(PropertyManager):
+    As expected it complains that a required property hasn't been
+    initialized. Here's how it's supposed to work:
 
-              @required_property
-              def important(self):
-                  "A very important attribute."
+    >>> Example(important=42)
+    Example(important=42, optional=13)
+    """
 
-              @mutable_property
-              def optional(self):
-                  "A not so important attribute."
-                  return 13
+    resettable = False
+    """
+    If this attribute is set to :data:`True` the property can be reset to its
+    default or computed value using :keyword:`del` and :func:`delattr()`. This
+    works by removing the assigned or cached value from the object's
+    :attr:`~object.__dict__`.
 
-       Let's construct an instance of the class defined above:
+    :see also: :class:`mutable_property` and :class:`cached_property`.
+    """
 
-       >>> Example()
-       Traceback (most recent call last):
-         File "property_manager/__init__.py", line 107, in __init__
-           raise TypeError("%s (%s)" % (msg, concatenate(missing_properties)))
-       TypeError: missing 1 required argument ('important')
-
-       As expected it complains that a required property hasn't been
-       initialized. Here's how it's supposed to work:
-
-       >>> Example(important=42)
-       Example(important=42, optional=13)
-
-    .. attribute:: environment_variable
-
-       If this attribute is set to the name of an environment variable the
-       property's value will default to the value of the environment variable.
-       If the environment variable isn't set the property falls back to its
-       computed value.
-
-    .. attribute:: usage_notes
-
-       If this attribute is :data:`True` (the default) :func:`inject_usage_notes()`
-       is used to inject usage notes into the documentation of the property.
-       You can set this attribute to :data:`False` to disable
-       :func:`inject_usage_notes()`.
-
-    .. attribute:: repr
-
-       By default :func:`PropertyManager.__repr__()` includes the names and
-       values of all properties that aren't :data:`None` in :func:`repr()`
-       output. If you want to omit a certain property (e.g. because the value
-       contains a secret that shouldn't be exposed or because the value is
-       expensive to calculate) you can set :attr:`repr` to :data:`False` (it
-       defaults to :data:`True`).
-
-    .. attribute:: dynamic
-
-       :data:`True` when the :class:`custom_property` subclass was dynamically
-       constructed by :func:`__new__()`, :data:`False` otherwise. Used by
-       :func:`compose_usage_notes()` to decide whether to link to the
-       documentation of the subclass or not (because it's impossible to link
-       to anonymous classes).
+    usage_notes = True
+    """
+    If this attribute is :data:`True` :func:`inject_usage_notes()` is used to
+    inject usage notes into the documentation of the property. You can set this
+    attribute to :data:`False` to disable :func:`inject_usage_notes()`.
     """
 
     writable = False
-    resettable = False
-    required = False
-    cached = False
-    repr = True
-    dynamic = False
-    usage_notes = True
-    environment_variable = None
+    """
+    If this attribute is set to :data:`True` the property supports assignment.
+    The assigned value is stored in the :attr:`~object.__dict__` of the object
+    that owns the property.
+
+    :see also: :class:`writable_property`, :class:`mutable_property` and
+               :class:`required_property`.
+
+    A relevant note about how Python looks up attributes: When an attribute is
+    looked up and exists in an object's :attr:`~object.__dict__` Python ignores
+    any property (descriptor) by the same name and immediately returns the
+    value that was found in the object's :attr:`~object.__dict__`.
+    """
 
     def __new__(cls, *args, **options):
         """
