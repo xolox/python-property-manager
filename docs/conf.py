@@ -1,15 +1,9 @@
-"""
-Documentation build configuration file for the `property_manager` package.
-
-This Python script contains the Sphinx configuration for building the
-documentation of the `executor` project. This file is execfile()d with
-the current directory set to its containing dir.
-"""
+"""Sphinx documentation build configuration file for the `property-manager` package."""
 
 import os
 import sys
 
-# Add the 'property_manager' source distribution's root directory to the module path.
+# Add the property-manager source distribution's root directory to the module path.
 sys.path.insert(0, os.path.abspath(os.pardir))
 
 # -- General configuration -----------------------------------------------------
@@ -21,7 +15,11 @@ extensions = [
     'sphinx.ext.inheritance_diagram',
     'sphinx.ext.intersphinx',
     'sphinx.ext.viewcode',
+    'humanfriendly.sphinx',
 ]
+
+# Sort members by the source order instead of alphabetically.
+autodoc_member_order = 'bysource'
 
 # Paths that contain templates, relative to this directory.
 templates_path = ['templates']
@@ -33,7 +31,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'property_manager'
+project = u'property-manager'
 copyright = u'2016, Peter Odding'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -41,7 +39,7 @@ copyright = u'2016, Peter Odding'
 # built documents.
 
 # Find the package version and make it the release.
-from property_manager import __version__ as property_manager_version
+from property_manager import __version__ as property_manager_version  # noqa
 
 # The short X.Y version.
 version = '.'.join(property_manager_version.split('.')[:2])
@@ -77,15 +75,4 @@ intersphinx_mapping = {
 html_theme = 'default'
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'executordoc'
-
-
-def setup(app):
-    """
-    Configure the autodoc extension not to skip ``__init__()`` members.
-
-    Based on http://stackoverflow.com/a/5599712/788200.
-    """
-    no_skip = ('__delete__', '__get__', '__init__', '__new__', '__repr__', '__set__',)
-    app.connect('autodoc-skip-member', (lambda app, what, name, obj, skip, options:
-                                        False if name in no_skip and obj.__doc__ else skip))
+htmlhelp_basename = 'propertymanagerdoc'

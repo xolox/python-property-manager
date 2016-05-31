@@ -3,7 +3,7 @@
 """Setup script for the `property-manager` package."""
 
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: October 4, 2015
+# Last Change: May 31, 2016
 # URL: https://property-manager.readthedocs.org
 
 # Standard library modules.
@@ -43,7 +43,7 @@ setup(name="property-manager",
       author_email='peter@peterodding.com',
       packages=find_packages(),
       install_requires=[
-          'humanfriendly >= 1.19'
+          'humanfriendly >= 1.44.7'
       ],
       test_suite='property_manager.tests',
       classifiers=[
