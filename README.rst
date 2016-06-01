@@ -247,6 +247,12 @@ to the computed value:
 >>> print(instance.environment_based)
 some-default-value
 
+Support for setters and deleters
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+All of the custom property classes support setters and deleters just like
+Python's ``property`` decorator does.
+
 The `PropertyManager` class
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

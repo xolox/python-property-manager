@@ -1,20 +1,25 @@
 # Tests of custom properties for Python programming.
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: May 31, 2016
+# Last Change: June 1, 2016
 # URL: https://property-manager.readthedocs.org
 
 """Automated tests for the :mod:`property_manager` module."""
 
 # Standard library modules.
+import logging
 import os
 import random
+import sys
 import unittest
 
 # External dependencies.
+import coloredlogs
 from humanfriendly import format
+from verboselogs import VerboseLogger
 
 # Modules included in our package.
+import property_manager
 from property_manager import (
     CACHED_PROPERTY_NOTE,
     CUSTOM_PROPERTY_NOTE,
@@ -33,15 +38,22 @@ from property_manager import (
     writable_property,
 )
 
+# Initialize a logger for this module.
+logger = VerboseLogger(__name__)
+
 
 class PropertyManagerTestCase(unittest.TestCase):
 
     """Container for the :mod:`property_manager` test suite."""
 
     def setUp(self):
-        """Automatically set USAGE_NOTES_ENABLED to True."""
-        import property_manager
+        """Enable verbose logging and usage notes."""
         property_manager.USAGE_NOTES_ENABLED = True
+        coloredlogs.install(level=logging.NOTSET)
+        # Separate the name of the test method (printed by the superclass
+        # and/or py.test without a newline at the end) from the first line of
+        # logging output that the test method is likely going to generate.
+        sys.stderr.write("\n")
 
     def test_builtin_property(self):
         """
@@ -209,6 +221,59 @@ class PropertyManagerTestCase(unittest.TestCase):
             assert p.is_recognizable
             assert p.is_cached
             assert p.is_writable
+
+    def test_setters(self):
+        """Test that custom properties support setters."""
+        class SetterTest(object):
+
+            @custom_property
+            def setter_test_property(self):
+                return getattr(self, 'whatever_you_want_goes_here', 42)
+
+            @setter_test_property.setter
+            def setter_test_property(self, value):
+                if value < 0:
+                    raise ValueError
+                self.whatever_you_want_goes_here = value
+
+        with PropertyInspector(SetterTest, 'setter_test_property') as p:
+            # This is basically just testing the lazy property.
+            assert p.is_recognizable
+            assert p.value == 42
+            # Test that the setter is being called by verifying
+            # that it raises a value error on invalid arguments.
+            self.assertRaises(ValueError, setattr, p, 'value', -5)
+            # Test that valid values are actually set.
+            p.value = 13
+            assert p.value == 13
+
+    def test_deleters(self):
+        """Test that custom properties support deleters."""
+        class DeleterTest(object):
+
+            @custom_property
+            def deleter_test_property(self):
+                return getattr(self, 'whatever_you_want_goes_here', 42)
+
+            @deleter_test_property.setter
+            def deleter_test_property(self, value):
+                self.whatever_you_want_goes_here = value
+
+            @deleter_test_property.deleter
+            def deleter_test_property(self):
+                delattr(self, 'whatever_you_want_goes_here')
+
+        with PropertyInspector(DeleterTest, 'deleter_test_property') as p:
+            # This is basically just testing the custom property.
+            assert p.is_recognizable
+            assert p.value == 42
+            # Make sure we can set a new value.
+            p.value = 13
+            assert p.value == 13
+            # Make sure we can delete the value.
+            p.delete()
+            # Here we expect the computed value.
+            assert p.value == 42
 
     def test_cache_invalidation(self):
         """Test that :func:`.PropertyManager.clear_cached_properties()` correctly clears cached property values."""

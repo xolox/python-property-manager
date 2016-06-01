@@ -78,6 +78,7 @@ import textwrap
 
 # External dependencies.
 from humanfriendly import coerce_boolean, compact, concatenate, format, pluralize
+from verboselogs import VerboseLogger
 
 try:
     # Check if `basestring' is defined (Python 2).
@@ -86,7 +87,7 @@ except NameError:
     # Alias basestring to str in Python 3.
     basestring = str
 
-__version__ = '1.5'
+__version__ = '1.6'
 """Semi-standard module versioning."""
 
 SPHINX_ACTIVE = 'sphinx' in sys.modules
@@ -160,6 +161,9 @@ RESETTABLE_WRITABLE_PROPERTY_NOTE = compact("""
     :func:`delattr()`.
 """)
 
+# Initialize a logger for this module.
+logger = VerboseLogger(__name__)
+
 
 def set_property(obj, name, value):
     """
@@ -174,6 +178,7 @@ def set_property(obj, name, value):
     is intentional: :func:`set_property()` is meant to be used by extensions of
     the `property-manager` project and by user defined setter methods.
     """
+    logger.spam("Setting value of %s property to %r ..", format_property(obj, name), value)
     obj.__dict__[name] = value
 
 
@@ -189,7 +194,19 @@ def clear_property(obj, name):
     is intentional: :func:`clear_property()` is meant to be used by extensions
     of the `property-manager` project and by user defined deleter methods.
     """
+    logger.spam("Clearing value of %s property ..", format_property(obj, name))
     obj.__dict__.pop(name, None)
+
+
+def format_property(obj, name):
+    """
+    Format an object property's dotted name.
+
+    :param obj: The object that owns the property.
+    :param name: The name of the property (a string).
+    :returns: The dotted path (a string).
+    """
+    return "%s.%s" % (obj.__class__.__name__, name)
 
 
 class PropertyManager(object):
@@ -509,31 +526,51 @@ class custom_property(property):
             # Positional arguments construct instances.
             return super(custom_property, cls).__new__(cls, *args)
 
-    def __init__(self, func):
+    def __init__(self, *args, **kw):
         """
         Initialize a :class:`custom_property` object.
 
-        :param func: The function that's called to compute the property's
-                     value. The :class:`custom_property` instance inherits the
-                     values of :attr:`~object.__doc__`, :attr:`~object.__module__`
-                     and :attr:`~object.__name__` from the function.
-        :raises: :exc:`~exceptions.ValueError` when the first positional
-                 argument is not callable (e.g. a function).
+        :param args: Any positional arguments are passed on to the initializer
+                     of the :class:`property` class.
+        :param kw: Any keyword arguments are passed on to the initializer of
+                   the :class:`property` class.
 
         Automatically calls :func:`inject_usage_notes()` during initialization
         (only if :data:`USAGE_NOTES_ENABLED` is :data:`True`).
         """
-        if not callable(func):
-            msg = "Expected to decorate callable, got %r instead!"
-            raise ValueError(msg % type(func).__name__)
-        else:
-            super(custom_property, self).__init__(func)
-            self.__doc__ = func.__doc__
-            self.__module__ = func.__module__
-            self.__name__ = func.__name__
-            self.func = func
+        # It's not documented so I went to try it out and apparently the
+        # property class initializer performs absolutely no argument
+        # validation. The first argument doesn't have to be a callable,
+        # in fact none of the arguments are even mandatory?! :-P
+        super(custom_property, self).__init__(*args, **kw)
+        # Explicit is better than implicit so I'll just go ahead and check
+        # whether the value(s) given by the user make sense :-).
+        self.ensure_callable('fget')
+        # We only check the 'fset' and 'fdel' values when they are not None
+        # because both of these arguments are supposed to be optional :-).
+        for name in 'fset', 'fdel':
+            if getattr(self, name) is not None:
+                self.ensure_callable(name)
+        # Copy some important magic members from the decorated method.
+        for name in '__doc__', '__module__', '__name__':
+            value = getattr(self.fget, name, None)
+            if value is not None:
+                setattr(self, name, value)
+        # Inject usage notes when running under Sphinx.
         if USAGE_NOTES_ENABLED:
             self.inject_usage_notes()
+
+    def ensure_callable(self, role):
+        """
+        Ensure that a decorated value is in fact callable.
+
+        :param role: The value's role (one of 'fget', 'fset' or 'fdel').
+        :raises: :exc:`exceptions.ValueError` when the value isn't callable.
+        """
+        value = getattr(self, role)
+        if not callable(value):
+            msg = "Invalid '%s' value! (expected callable, got %r instead)"
+            raise ValueError(msg % (role, value))
 
     def inject_usage_notes(self):
         """
@@ -593,11 +630,14 @@ class custom_property(property):
             # Called to get the attribute of the class.
             return self
         else:
+            # Calculate the property's dotted name only once.
+            dotted_name = format_property(obj, self.__name__)
             # Called to get the attribute of an instance.
             if self.writable or self.cached:
                 # Check if a value has been assigned or cached.
                 value = obj.__dict__.get(self.__name__, NOTHING)
                 if value is not NOTHING:
+                    logger.spam("%s reporting assigned or cached value (%r) ..", dotted_name, value)
                     return value
             # Check if the property has an environment variable. We do this
             # after checking for an assigned value so that the `writable' and
@@ -605,11 +645,14 @@ class custom_property(property):
             if self.environment_variable:
                 value = os.environ.get(self.environment_variable, NOTHING)
                 if value is not NOTHING:
+                    logger.spam("%s reporting value from environment variable (%r) ..", dotted_name, value)
                     return value
             # Compute the property's value.
-            value = self.func(obj)
+            value = super(custom_property, self).__get__(obj, type)
+            logger.spam("%s reporting computed value (%r) ..", dotted_name, value)
             if self.cached:
                 # Cache the computed value.
+                logger.spam("%s caching computed value ..", dotted_name)
                 set_property(obj, self.__name__, value)
             return value
 
@@ -622,10 +665,22 @@ class custom_property(property):
         :raises: :exc:`~exceptions.AttributeError` if :attr:`writable` is
                  :data:`False`.
         """
-        if not self.writable:
-            msg = "%r object attribute %r is read-only"
-            raise AttributeError(msg % (obj.__class__.__name__, self.__name__))
-        set_property(obj, self.__name__, value)
+        # Calculate the property's dotted name only once.
+        dotted_name = format_property(obj, self.__name__)
+        # Evaluate the property's setter (if any).
+        try:
+            logger.spam("%s calling setter with value %r ..", dotted_name, value)
+            super(custom_property, self).__set__(obj, value)
+        except AttributeError:
+            logger.spam("%s setter raised attribute error, falling back.", dotted_name)
+            if self.writable:
+                # Override the computed value.
+                logger.spam("%s overriding computed value to %r ..", dotted_name, value)
+                set_property(obj, self.__name__, value)
+            else:
+                # Refuse to override the computed value.
+                msg = "%r object attribute %r is read-only"
+                raise AttributeError(msg % (obj.__class__.__name__, self.__name__))
 
     def __delete__(self, obj):
         """
@@ -638,10 +693,21 @@ class custom_property(property):
         Once the property has been deleted the next read will evaluate the
         decorated function to compute the value.
         """
-        if not self.resettable:
-            msg = "%r object attribute %r is read-only"
-            raise AttributeError(msg % (obj.__class__.__name__, self.__name__))
-        clear_property(obj, self.__name__)
+        # Calculate the property's dotted name only once.
+        dotted_name = format_property(obj, self.__name__)
+        # Evaluate the property's deleter (if any).
+        try:
+            logger.spam("%s calling deleter ..", dotted_name)
+            super(custom_property, self).__delete__(obj)
+        except AttributeError:
+            logger.spam("%s deleter raised attribute error, falling back.", dotted_name)
+            if self.resettable:
+                # Reset the computed or overridden value.
+                logger.spam("%s clearing assigned or computed value ..", dotted_name)
+                clear_property(obj, self.__name__)
+            else:
+                msg = "%r object attribute %r is read-only"
+                raise AttributeError(msg % (obj.__class__.__name__, self.__name__))
 
 
 class writable_property(custom_property):
