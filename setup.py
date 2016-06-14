@@ -3,7 +3,7 @@
 """Setup script for the `property-manager` package."""
 
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: June 1, 2016
+# Last Change: June 14, 2016
 # URL: https://property-manager.readthedocs.org
 
 # Standard library modules.
@@ -12,32 +12,32 @@ import os
 import re
 
 # De-facto standard solution for Python packaging.
-from setuptools import setup, find_packages
+from setuptools import find_packages, setup
 
-# Find the directory where the source distribution was unpacked.
-source_directory = os.path.dirname(os.path.abspath(__file__))
 
-# Find the current version.
-module = os.path.join(source_directory, 'property_manager', '__init__.py')
-for line in open(module, 'r'):
-    match = re.match(r'^__version__\s*=\s*["\']([^"\']+)["\']$', line)
-    if match:
-        version_string = match.group(1)
-        break
-else:
-    raise Exception("Failed to extract version from %s!" % module)
+def get_contents(*args):
+    """Get the contents of a file relative to the source distribution directory."""
+    with codecs.open(get_absolute_path(*args), 'r', 'UTF-8') as handle:
+        return handle.read()
 
-# Fill in the long description (for the benefit of PyPI)
-# with the contents of README.rst (rendered by GitHub).
-readme_file = os.path.join(source_directory, 'README.rst')
-with codecs.open(readme_file, 'r', 'utf-8') as handle:
-    readme_text = handle.read()
+
+def get_version(*args):
+    """Extract the version number from a Python module."""
+    contents = get_contents(*args)
+    metadata = dict(re.findall('__([a-z]+)__ = [\'"]([^\'"]+)', contents))
+    return metadata['version']
+
+
+def get_absolute_path(*args):
+    """Transform relative pathnames into absolute pathnames."""
+    return os.path.join(os.path.dirname(os.path.abspath(__file__)), *args)
+
 
 setup(name="property-manager",
-      version=version_string,
+      version=get_version('property_manager', '__init__.py'),
       description=("Useful property variants for Python programming (required"
                    " properties, writable properties, cached properties, etc)"),
-      long_description=readme_text,
+      long_description=get_contents('README.rst'),
       url='https://property-manager.readthedocs.org',
       author="Peter Odding",
       author_email='peter@peterodding.com',
