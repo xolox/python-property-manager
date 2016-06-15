@@ -1,7 +1,7 @@
 # Tests of custom properties for Python programming.
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: June 1, 2016
+# Last Change: June 15, 2016
 # URL: https://property-manager.readthedocs.org
 
 """Automated tests for the :mod:`property_manager` module."""
@@ -32,6 +32,7 @@ from property_manager import (
     PropertyManager,
     cached_property,
     custom_property,
+    key_property,
     lazy_property,
     mutable_property,
     required_property,
@@ -302,6 +303,86 @@ class PropertyManagerTestCase(unittest.TestCase):
         assert instance.lazy == (42 * 2)
         # Make sure the value of the cached property *was* cleared.
         assert instance.cached == (42 * 2 * 2)
+
+    def test_key_properties(self):
+        """Test that :attr:`.PropertyManager.key_properties` reports only properties defined by subclasses."""
+        class KeyPropertiesTest(PropertyManager):
+
+            @key_property
+            def one(self):
+                return 1
+
+            @key_property
+            def two(self):
+                return 2
+
+        instance = KeyPropertiesTest()
+        assert list(instance.key_properties) == ['one', 'two']
+        assert instance.key_values == (('one', 1), ('two', 2))
+
+    def test_hashable_objects(self):
+        """Test that :attr:`.PropertyManager.__hash__` works properly."""
+        class HashableObject(PropertyManager):
+
+            @key_property
+            def a(self):
+                return 1
+
+            @key_property
+            def b(self):
+                return 2
+
+        # Create a set and put an object in it.
+        collection = set()
+        collection.add(HashableObject())
+        assert len(collection) == 1
+        # Add a second (identical) object (or not :-).
+        collection.add(HashableObject())
+        assert len(collection) == 1
+        # Add a third (non-identical) object.
+        collection.add(HashableObject(b=42))
+        assert len(collection) == 2
+        # Try to add an object with an unhashable property value.
+        self.assertRaises(ValueError, HashableObject, b=[])
+
+    def test_sortable_objects(self):
+        """Test that the rich comparison methods work properly."""
+        class SortableObject(PropertyManager):
+
+            @key_property
+            def a(self):
+                return 1
+
+            @key_property
+            def b(self):
+                return 2
+
+        # Test the non-equality operator.
+        assert SortableObject(a=1, b=2) != SortableObject(a=2, b=2)
+        # Test the "less than" operator.
+        assert SortableObject(a=1, b=2) < SortableObject(a=2, b=1)
+        assert not SortableObject(a=2, b=1) < SortableObject(a=1, b=2)
+        # Test the "less than or equal" operator.
+        assert SortableObject(a=1, b=2) <= SortableObject(a=2, b=1)
+        assert SortableObject(a=1, b=2) <= SortableObject(a=1, b=2)
+        assert not SortableObject(a=2, b=1) <= SortableObject(a=1, b=2)
+        # Test the "greater than" operator.
+        assert SortableObject(a=2, b=1) > SortableObject(a=1, b=2)
+        assert not SortableObject(a=1, b=2) > SortableObject(a=2, b=1)
+        # Test the "greater than or equal" operator.
+        assert SortableObject(a=2, b=1) >= SortableObject(a=1, b=2)
+        assert SortableObject(a=2, b=1) >= SortableObject(a=2, b=1)
+        assert not SortableObject(a=1, b=2) >= SortableObject(a=2, b=1)
+        # Test comparison with arbitrary objects. This should not raise any
+        # unexpected exceptions.
+        instance = SortableObject()
+        arbitrary_object = object()
+        if sys.version_info[0] <= 2:
+            # In Python 2 arbitrary objects "supported" rich comparison.
+            assert instance >= arbitrary_object or instance <= arbitrary_object
+        else:
+            # Since Python 3 it raises a TypeError instead.
+            self.assertRaises(TypeError, lambda: instance >= arbitrary_object or instance <= arbitrary_object)
 
 
 class PropertyInspector(object):

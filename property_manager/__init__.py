@@ -1,7 +1,7 @@
 # Useful property variants for Python programming.
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: June 1, 2016
+# Last Change: June 15, 2016
 # URL: https://property-manager.readthedocs.org
 
 """
@@ -20,16 +20,17 @@ Custom property types
 Here's an overview of the predefined property variants and their supported
 operations:
 
-==========================  ================  =============  ==========
-Variant                     Can be assigned?  Can be reset?  Is cached?
-==========================  ================  =============  ==========
-:class:`custom_property`      No                No             No
-:class:`writable_property`    Yes               No             No
-:class:`mutable_property`     Yes               Yes            No
-:class:`required_property`    Yes               No             No
-:class:`lazy_property`        No                No             Yes
-:class:`cached_property`      No                Yes            Yes
-==========================  ================  =============  ==========
+==========================  ==========  ============  ==========  =======
+Variant                     Assignment  Reassignment  Deletion    Caching
+==========================  ==========  ============  ==========  =======
+:class:`custom_property`    No          No            No          No
+:class:`writable_property`  Yes         Yes           No          No
+:class:`mutable_property`   Yes         Yes           Yes         No
+:class:`required_property`  Yes         Yes           No          No
+:class:`key_property`       Yes         No            No          No
+:class:`lazy_property`      No          No            No          Yes
+:class:`cached_property`    No          No            Yes         Yes
+==========================  ==========  ============  ==========  =======
 
 If you want a different combination of supported options (for example a cached
 property that supports assignment) this is also possible, please take a look at
@@ -42,6 +43,7 @@ variants relate to each other:
                          property_manager.writable_property \
                          property_manager.mutable_property \
                          property_manager.required_property \
+                         property_manager.key_property \
                          property_manager.lazy_property \
                          property_manager.cached_property
    :parts: 1
@@ -72,6 +74,7 @@ Classes
 """
 
 # Standard library modules.
+import collections
 import os
 import sys
 import textwrap
@@ -87,7 +90,7 @@ except NameError:
     # Alias basestring to str in Python 3.
     basestring = str
 
-__version__ = '1.6'
+__version__ = '2.0'
 """Semi-standard module versioning."""
 
 SPHINX_ACTIVE = 'sphinx' in sys.modules
@@ -139,6 +142,11 @@ REQUIRED_PROPERTY_NOTE = compact("""
     constructor of the class that defines the property with a keyword argument
     named `{name}` (unless a custom constructor is defined, in this case please
     refer to the documentation of that constructor).
+""")
+
+KEY_PROPERTY_NOTE = compact("""
+    Once this property has been assigned a value you are not allowed to assign
+    a new value to the property.
 """)
 
 WRITABLE_PROPERTY_NOTE = compact("""
@@ -212,7 +220,7 @@ def format_property(obj, name):
 class PropertyManager(object):
 
     """
-    Superclass for classes that use the computed properties from this module.
+    Optional superclass for classes that use the computed properties from this module.
 
     Provides support for required properties, setting of properties in the
     constructor and generating a useful textual representation of objects with
@@ -250,17 +258,28 @@ class PropertyManager(object):
     @property
     def missing_properties(self):
         """
-        The names of required properties that are missing.
+        The names of key and/or required properties that are missing.
 
-        This is a list of strings with the names of required properties that
-        either haven't been set or are set to :data:`None`.
+        This is a list of strings with the names of key and/or required
+        properties that either haven't been set or are set to :data:`None`.
         """
-        return [n for n in self.required_properties if getattr(self, n, None) is None]
+        names = sorted(set(self.required_properties) | set(self.key_properties))
+        return [n for n in names if getattr(self, n, None) is None]
 
     @property
     def required_properties(self):
-        """A list of strings with the names of any required properties."""
-        return [n for n in self.find_properties(required=True)]
+        """A sorted list of strings with the names of any :attr:`~custom_property.required` properties."""
+        return self.find_properties(required=True)
+
+    @property
+    def key_properties(self):
+        """A sorted list of strings with the names of any :attr:`~custom_property.key` properties."""
+        return self.find_properties(key=True)
+
+    @property
+    def key_values(self):
+        """A tuple of tuples with (name, value) pairs for each name in :attr:`key_properties`."""
+        return tuple((name, getattr(self, name)) for name in self.key_properties)
 
     def find_properties(self, **options):
         """
@@ -268,9 +287,11 @@ class PropertyManager(object):
 
         :param options: Passed on to :func:`have_property()` to enable
                         filtering properties by the operations they support.
-        :returns: A list of strings with the names of properties.
+        :returns: A sorted list of strings with the names of properties.
         """
-        return sorted(n for n in dir(self) if self.have_property(n, **options))
+        # We don't explicitly sort our results here because the dir() function
+        # is documented to sort its results alphabetically.
+        return [n for n in dir(self) if self.have_property(n, **options)]
 
     def have_property(self, name, **options):
         """
@@ -282,6 +303,7 @@ class PropertyManager(object):
                         :attr:`~custom_property.resettable`,
                         :attr:`~custom_property.cached`,
                         :attr:`~custom_property.required`,
+                        :attr:`~custom_property.key`,
                         :attr:`~custom_property.repr`) and an expected value
                         (:data:`True` or :data:`False`). Filtering on more than
                         one option is supported.
@@ -304,24 +326,84 @@ class PropertyManager(object):
         for name in self.find_properties(cached=True, resettable=True):
             delattr(self, name)
 
+    def __eq__(self, other):
+        """Enable equality comparison and hashing for :class:`PropertyManager` subclasses."""
+        our_key = self.key_values
+        return (our_key == other.key_values
+                if our_key and isinstance(other, PropertyManager)
+                else NotImplemented)
+
+    def __ne__(self, other):
+        """Enable non-equality comparison for :class:`PropertyManager` subclasses."""
+        our_key = self.key_values
+        return (our_key != other.key_values
+                if our_key and isinstance(other, PropertyManager)
+                else NotImplemented)
+
+    def __lt__(self, other):
+        """Enable "less than" comparison for :class:`PropertyManager` subclasses."""
+        our_key = self.key_values
+        return (our_key < other.key_values
+                if our_key and isinstance(other, PropertyManager)
+                else NotImplemented)
+
+    def __le__(self, other):
+        """Enable "less than or equal" comparison for :class:`PropertyManager` subclasses."""
+        our_key = self.key_values
+        return (our_key <= other.key_values
+                if our_key and isinstance(other, PropertyManager)
+                else NotImplemented)
+
+    def __gt__(self, other):
+        """Enable "greater than" comparison for :class:`PropertyManager` subclasses."""
+        our_key = self.key_values
+        return (our_key > other.key_values
+                if our_key and isinstance(other, PropertyManager)
+                else NotImplemented)
+
+    def __ge__(self, other):
+        """Enable "greater than or equal" comparison for :class:`PropertyManager` subclasses."""
+        our_key = self.key_values
+        return (our_key >= other.key_values
+                if our_key and isinstance(other, PropertyManager)
+                else NotImplemented)
+
+    def __hash__(self):
+        """
+        Enable hashing for :class:`PropertyManager` subclasses.
+
+        This method makes it possible to add :class:`PropertyManager` objects
+        to sets and use them as dictionary keys. The hashes computed by this
+        method are based on the values in :attr:`key_values`.
+        """
+        return hash(PropertyManager) ^ hash(self.key_values)
+
     def __repr__(self):
         """
         Render a human friendly string representation of an object with computed properties.
 
         This method generates a user friendly textual representation for
         objects that use computed properties created using the
-        :mod:`property_manager` module. By default it assumes that *all such
-        properties* are idempotent and may be called at discretion without
-        worrying too much about performance.
+        :mod:`property_manager` module.
+
+        If one or more :attr:`key_properties` are defined, their names and
+        values are used to generate a compact object representation. When
+        :attr:`key_properties` is empty :func:`__repr__()` assumes that all of
+        the object's properties are idempotent and may be evaluated at any
+        given time without worrying too much about performance (refer to the
+        :attr:`~custom_property.repr` option for an escape hatch).
         """
         fields = []
-        for name in self.find_properties(repr=True):
-            # Check if the property is defined by a subclass.
-            if not hasattr(PropertyManager, name):
-                # Check if the property has a value.
-                value = getattr(self, name, NOTHING)
-                if value is not NOTHING:
-                    fields.append("%s=%r" % (name, value))
+        for name, value in self.key_values:
+            fields.append("%s=%r" % (name, value))
+        if not fields:
+            for name in self.find_properties(repr=True):
+                # Check if the property is defined by a subclass.
+                if not hasattr(PropertyManager, name):
+                    # Check if the property has a value.
+                    value = getattr(self, name, NOTHING)
+                    if value is not NOTHING:
+                        fields.append("%s=%r" % (name, value))
         return "%s(%s)" % (self.__class__.__name__, ", ".join(fields))
 
 
@@ -370,6 +452,24 @@ class custom_property(property):
     property's value will default to the value of the environment variable. If
     the environment variable isn't set the property falls back to its computed
     value.
+    """
+
+    key = False
+    """
+    If this attribute is :data:`True` the property's name is included in the
+    value of :attr:`~PropertyManager.key_properties` which means that the
+    property's value becomes part of the "key" that is used to compare, sort
+    and hash :class:`PropertyManager` objects. There are a few things to be
+    aware of with regards to key properties and their values:
+
+    - The property's value must be set during object initialization (the same
+      as for :attr:`required` properties) and it cannot be changed after it is
+      initially assigned a value (because allowing this would "compromise"
+      the results of the :func:`~PropertyManager.__hash__()` method).
+    - The property's value must be hashable (otherwise it can't be used by the
+      :func:`~PropertyManager.__hash__()` method).
+
+    :see also: :class:`key_property`.
     """
 
     repr = True
@@ -607,6 +707,8 @@ class custom_property(property):
             notes.append(format(ENVIRONMENT_PROPERTY_NOTE, variable=self.environment_variable))
         if self.required:
             notes.append(format(REQUIRED_PROPERTY_NOTE, name=self.__name__))
+        if self.key:
+            notes.append(KEY_PROPERTY_NOTE)
         if self.writable:
             notes.append(WRITABLE_PROPERTY_NOTE)
         if self.cached:
@@ -630,10 +732,10 @@ class custom_property(property):
             # Called to get the attribute of the class.
             return self
         else:
-            # Calculate the property's dotted name only once.
+            # Called to get the attribute of an instance. We calculate the
+            # property's dotted name here once to minimize string creation.
             dotted_name = format_property(obj, self.__name__)
-            # Called to get the attribute of an instance.
-            if self.writable or self.cached:
+            if self.key or self.writable or self.cached:
                 # Check if a value has been assigned or cached.
                 value = obj.__dict__.get(self.__name__, NOTHING)
                 if value is not NOTHING:
@@ -674,13 +776,23 @@ class custom_property(property):
         except AttributeError:
             logger.spam("%s setter raised attribute error, falling back.", dotted_name)
             if self.writable:
-                # Override the computed value.
+                # Override a computed or previously assigned value.
                 logger.spam("%s overriding computed value to %r ..", dotted_name, value)
                 set_property(obj, self.__name__, value)
             else:
-                # Refuse to override the computed value.
-                msg = "%r object attribute %r is read-only"
-                raise AttributeError(msg % (obj.__class__.__name__, self.__name__))
+                # Check if we're setting a key property during initialization.
+                if self.key and obj.__dict__.get(self.__name__, None) is None:
+                    # Make sure we were given a hashable value.
+                    if not isinstance(value, collections.Hashable):
+                        msg = "Invalid value for key property '%s'! (expected hashable object, got %r instead)"
+                        raise ValueError(msg % (self.__name__, value))
+                    # Set the key property's value.
+                    logger.spam("%s setting initial value to %r ..", dotted_name, value)
+                    set_property(obj, self.__name__, value)
+                else:
+                    # Refuse to override the computed value.
+                    msg = "%r object attribute %r is read-only"
+                    raise AttributeError(msg % (obj.__class__.__name__, self.__name__))
 
     def __delete__(self, obj):
         """
@@ -734,6 +846,20 @@ class required_property(writable_property):
     example.
     """
 
+    required = True
+
+
+class key_property(custom_property):
+
+    """
+    A property whose value is used for comparison and hashing.
+
+    This is a variant of :class:`custom_property` that has the
+    :attr:`~custom_property.key` and :attr:`~custom_property.required`
+    options enabled by default.
+    """
+
+    key = True
     required = True
 
 
