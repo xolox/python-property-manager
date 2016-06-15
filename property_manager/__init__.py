@@ -90,7 +90,7 @@ except NameError:
     # Alias basestring to str in Python 3.
     basestring = str
 
-__version__ = '2.0'
+__version__ = '2.1'
 """Semi-standard module versioning."""
 
 SPHINX_ACTIVE = 'sphinx' in sys.modules
@@ -128,8 +128,7 @@ CUSTOM_PROPERTY_NOTE = compact("""
 """)
 
 DYNAMIC_PROPERTY_NOTE = compact("""
-    The :attr:`{name}` property is a dynamically constructed
-    subclass of :class:`~{type}`.
+    The :attr:`{name}` property is a :class:`~{type}`.
 """)
 
 ENVIRONMENT_PROPERTY_NOTE = compact("""
