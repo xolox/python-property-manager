@@ -1,4 +1,10 @@
-"""Sphinx documentation build configuration file for the `property-manager` package."""
+# Useful property variants for Python programming.
+#
+# Author: Peter Odding <peter@peterodding.com>
+# Last Change: June 23, 2016
+# URL: https://property-manager.readthedocs.io
+
+"""Sphinx documentation configuration for the `property-manager` package."""
 
 import os
 import sys
@@ -74,7 +80,7 @@ intersphinx_mapping = {
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-html_theme = 'default'
+html_theme = 'classic'
 
 # Output file base name for HTML help builder.
 htmlhelp_basename = 'propertymanagerdoc'
