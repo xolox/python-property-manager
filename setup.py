@@ -3,7 +3,7 @@
 """Setup script for the `property-manager` package."""
 
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: June 14, 2016
+# Last Change: June 23, 2016
 # URL: https://property-manager.readthedocs.org
 
 # Standard library modules.
@@ -28,6 +28,19 @@ def get_version(*args):
     return metadata['version']
 
 
+def get_requirements(*args):
+    """Get requirements from pip requirement files."""
+    requirements = set()
+    with open(get_absolute_path(*args)) as handle:
+        for line in handle:
+            # Strip comments.
+            line = re.sub(r'^#.*|\s#.*', '', line)
+            # Ignore empty lines
+            if line and not line.isspace():
+                requirements.add(re.sub(r'\s+', '', line))
+    return sorted(requirements)
+
+
 def get_absolute_path(*args):
     """Transform relative pathnames into absolute pathnames."""
     return os.path.join(os.path.dirname(os.path.abspath(__file__)), *args)
@@ -42,13 +55,8 @@ setup(name="property-manager",
       author="Peter Odding",
       author_email='peter@peterodding.com',
       packages=find_packages(),
-      install_requires=[
-          'humanfriendly >= 1.44.7',
-          'verboselogs >= 1.1',
-      ],
-      tests_require=[
-          'coloredlogs >= 5.0',
-      ],
+      install_requires=get_requirements('requirements.txt'),
+      tests_require=get_requirements('requirements-tests.txt'),
       test_suite='property_manager.tests',
       classifiers=[
           'Development Status :: 5 - Production/Stable',

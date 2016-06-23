@@ -1,0 +1,2 @@
+humanfriendly >= 1.44.7
+verboselogs >= 1.1
