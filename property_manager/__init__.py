@@ -1,7 +1,7 @@
 # Useful property variants for Python programming.
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: June 15, 2016
+# Last Change: June 23, 2016
 # URL: https://property-manager.readthedocs.org
 
 """
@@ -66,6 +66,14 @@ related enhancements:
   values of all properties. Individual properties can be omitted from the
   :func:`repr()` output by setting the :attr:`~custom_property.repr` option to
   :data:`False`.
+
+Logging
+=======
+
+The :mod:`property_manager` module emits log messages at the custom log level
+:data:`~verboselogs.SPAM` which is considered *more* verbose than
+:data:`~logging.DEBUG`, so if you want these messages to be logged
+make sure they're not being ignored based on their level.
 
 Classes
 =======

@@ -64,9 +64,10 @@ pygments_style = 'sphinx'
 # Refer to the Python standard library.
 # From: http://twistedmatrix.com/trac/ticket/4582.
 intersphinx_mapping = {
-    'python2': ('https://docs.python.org', None),
+    'humanfriendly': ('https://humanfriendly.readthedocs.io/en/latest', None),
+    'python2': ('https://docs.python.org/2', None),
     'python3': ('https://docs.python.org/3', None),
-    'humanfriendly': ('https://humanfriendly.readthedocs.org/en/latest', None),
+    'verboselogs': ('https://verboselogs.readthedocs.io/en/latest', None),
 }
 
 # -- Options for HTML output ---------------------------------------------------
