@@ -1,7 +1,7 @@
 # Tests of custom properties for Python programming.
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: June 15, 2016
+# Last Change: June 30, 2017
 # URL: https://property-manager.readthedocs.org
 
 """Automated tests for the :mod:`property_manager` module."""
@@ -497,7 +497,7 @@ class PropertyInspector(object):
             return False
 
     def check_usage_notes(self):
-        """"Check whether the correct notes are embedded in the documentation."""
+        """Check whether the correct notes are embedded in the documentation."""
         class DocumentationTest(object):
             @self.property_type
             def documented_property(self):
