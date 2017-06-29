@@ -1,7 +1,7 @@
 # Useful property variants for Python programming.
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: June 23, 2016
+# Last Change: June 29, 2017
 # URL: https://property-manager.readthedocs.io
 
 """Sphinx documentation configuration for the `property-manager` package."""
@@ -37,8 +37,8 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'property-manager'
-copyright = u'2016, Peter Odding'
+project = 'property-manager'
+copyright = '2017, Peter Odding'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
