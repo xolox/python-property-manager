@@ -1,7 +1,7 @@
 # Useful property variants for Python programming.
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: June 23, 2016
+# Last Change: June 29, 2017
 # URL: https://property-manager.readthedocs.org
 
 """
@@ -98,7 +98,7 @@ except NameError:
     # Alias basestring to str in Python 3.
     basestring = str
 
-__version__ = '2.1'
+__version__ = '2.2'
 """Semi-standard module versioning."""
 
 SPHINX_ACTIVE = 'sphinx' in sys.modules
@@ -263,6 +263,16 @@ class PropertyManager(object):
                 raise TypeError(msg % name)
 
     @property
+    def key_properties(self):
+        """A sorted list of strings with the names of any :attr:`~custom_property.key` properties."""
+        return self.find_properties(key=True)
+
+    @property
+    def key_values(self):
+        """A tuple of tuples with (name, value) pairs for each name in :attr:`key_properties`."""
+        return tuple((name, getattr(self, name)) for name in self.key_properties)
+
+    @property
     def missing_properties(self):
         """
         The names of key and/or required properties that are missing.
@@ -274,19 +284,24 @@ class PropertyManager(object):
         return [n for n in names if getattr(self, n, None) is None]
 
     @property
+    def repr_properties(self):
+        """
+        The names of the properties rendered by :func:`__repr__()` (a list of strings).
+
+        When :attr:`key_properties` is nonempty the names of the key properties
+        are returned, otherwise a more complex selection is made (of properties
+        defined by subclasses of :class:`PropertyManager` whose
+        :attr:`~custom_property.repr` is :data:`True`).
+        """
+        return self.key_properties or [
+            name for name in self.find_properties(repr=True)
+            if not hasattr(PropertyManager, name)
+        ]
+
+    @property
     def required_properties(self):
         """A sorted list of strings with the names of any :attr:`~custom_property.required` properties."""
         return self.find_properties(required=True)
-
-    @property
-    def key_properties(self):
-        """A sorted list of strings with the names of any :attr:`~custom_property.key` properties."""
-        return self.find_properties(key=True)
-
-    @property
-    def key_values(self):
-        """A tuple of tuples with (name, value) pairs for each name in :attr:`key_properties`."""
-        return tuple((name, getattr(self, name)) for name in self.key_properties)
 
     def find_properties(self, **options):
         """
@@ -332,6 +347,25 @@ class PropertyManager(object):
         """Clear cached properties so that their values are recomputed."""
         for name in self.find_properties(cached=True, resettable=True):
             delattr(self, name)
+
+    def render_properties(self, *names):
+        """
+        Render a human friendly string representation of an object with computed properties.
+
+        :param names: Each positional argument gives the name of a property
+                      to include in the rendered object representation.
+        :returns: The rendered object representation (a string).
+
+        This method generates a user friendly textual representation for
+        objects that use computed properties created using the
+        :mod:`property_manager` module.
+        """
+        fields = []
+        for name in names:
+            value = getattr(self, name, None)
+            if value is not None or name in self.key_properties:
+                fields.append("%s=%r" % (name, value))
+        return "%s(%s)" % (self.__class__.__name__, ", ".join(fields))
 
     def __eq__(self, other):
         """Enable equality comparison and hashing for :class:`PropertyManager` subclasses."""
@@ -389,29 +423,16 @@ class PropertyManager(object):
         """
         Render a human friendly string representation of an object with computed properties.
 
-        This method generates a user friendly textual representation for
-        objects that use computed properties created using the
-        :mod:`property_manager` module.
+        :returns: The rendered object representation (a string).
 
-        If one or more :attr:`key_properties` are defined, their names and
-        values are used to generate a compact object representation. When
-        :attr:`key_properties` is empty :func:`__repr__()` assumes that all of
-        the object's properties are idempotent and may be evaluated at any
-        given time without worrying too much about performance (refer to the
-        :attr:`~custom_property.repr` option for an escape hatch).
+        This method uses :func:`render_properties()` to render the properties
+        whose names are given by :attr:`repr_properties`. When the object
+        doesn't have any key properties, :func:`__repr__()` assumes that
+        all of the object's properties are idempotent and may be evaluated
+        at any given time without worrying too much about performance (refer
+        to the :attr:`~custom_property.repr` option for an escape hatch).
         """
-        fields = []
-        for name, value in self.key_values:
-            fields.append("%s=%r" % (name, value))
-        if not fields:
-            for name in self.find_properties(repr=True):
-                # Check if the property is defined by a subclass.
-                if not hasattr(PropertyManager, name):
-                    # Check if the property has a value.
-                    value = getattr(self, name, NOTHING)
-                    if value is not NOTHING:
-                        fields.append("%s=%r" % (name, value))
-        return "%s(%s)" % (self.__class__.__name__, ", ".join(fields))
+        return self.render_properties(*self.repr_properties)
 
 
 class custom_property(property):
