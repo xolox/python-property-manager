@@ -3,7 +3,7 @@
 """Setup script for the `property-manager` package."""
 
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: June 23, 2016
+# Last Change: June 29, 2017
 # URL: https://property-manager.readthedocs.org
 
 # Standard library modules.
@@ -73,6 +73,9 @@ setup(name="property-manager",
           'Programming Language :: Python :: 3',
           'Programming Language :: Python :: 3.4',
           'Programming Language :: Python :: 3.5',
+          'Programming Language :: Python :: 3.6',
+          'Programming Language :: Python :: Implementation :: CPython',
+          'Programming Language :: Python :: Implementation :: PyPy',
           'Topic :: Documentation :: Sphinx',
           'Topic :: Software Development',
           'Topic :: Software Development :: Documentation',
