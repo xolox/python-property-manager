@@ -22,6 +22,7 @@ extensions = [
     'sphinx.ext.intersphinx',
     'sphinx.ext.viewcode',
     'humanfriendly.sphinx',
+    'property_manager.sphinx',
 ]
 
 # Sort members by the source order instead of alphabetically.

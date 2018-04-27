@@ -1,7 +1,7 @@
 # Tests of custom properties for Python programming.
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: June 30, 2017
+# Last Change: April 27, 2018
 # URL: https://property-manager.readthedocs.org
 
 """Automated tests for the :mod:`property_manager` module."""
@@ -15,7 +15,7 @@ import unittest
 
 # External dependencies.
 import coloredlogs
-from humanfriendly import format
+from humanfriendly import compact, format
 from verboselogs import VerboseLogger
 
 # Modules included in our package.
@@ -38,6 +38,7 @@ from property_manager import (
     required_property,
     writable_property,
 )
+from property_manager.sphinx import TypeInspector, setup, append_property_docs
 
 # Initialize a logger for this module.
 logger = VerboseLogger(__name__)
@@ -383,6 +384,39 @@ class PropertyManagerTestCase(unittest.TestCase):
         else:
             # Since Python 3 it raises a TypeError instead.
             self.assertRaises(TypeError, lambda: instance >= arbitrary_object or instance <= arbitrary_object)
+
+    def test_sphinx_integration(self):
+        """Tests for the :mod:`property_manager.sphinx` module."""
+        class FakeApp(object):
+
+            def __init__(self):
+                self.callbacks = {}
+
+            def connect(self, event, callback):
+                self.callbacks.setdefault(event, []).append(callback)
+
+        app = FakeApp()
+        setup(app)
+        assert append_property_docs in app.callbacks['autodoc-process-docstring']
+        lines = ["Some boring description."]
+        obj = TypeInspector
+        append_property_docs(app=app, what=None, name=None, obj=obj, options=None, lines=lines)
+        assert len(lines) > 0
+        assert lines[0] == "Some boring description."
+        assert not lines[1]
+        assert lines[2] == compact("""
+            When you initialize a :class:`TypeInspector` object you are
+            required to provide a value for the :attr:`type` property. You can
+            set the value of the :attr:`type` property by passing a keyword
+            argument to the class initializer.
+        """)
+        assert not lines[3]
+        assert lines[4] == "Here's an overview of the :class:`TypeInspector` class:"
+
+    def test_init_sorting(self):
+        """Make sure __init__() is sorted before other special methods."""
+        inspector = TypeInspector(type=PropertyInspector)
+        assert inspector.special_methods[0] == '__init__'
 
 
 class PropertyInspector(object):

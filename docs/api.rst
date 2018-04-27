@@ -7,8 +7,15 @@ code of `property-manager` |release|:
 .. contents::
    :local:
 
-The :mod:`property_manager` module
-----------------------------------
+:mod:`property_manager`
+-----------------------
 
 .. automodule:: property_manager
+   :members:
+
+
+:mod:`property_manager.sphinx`
+------------------------------
+
+.. automodule:: property_manager.sphinx
    :members:

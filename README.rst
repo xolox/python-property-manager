@@ -271,6 +271,10 @@ following behavior is made available to your class:
 - The `clear_cached_properties()`_ method can be used to invalidate the cached
   values of all cached properties at once.
 
+Additionally you can use the property_manager.sphinx_ module as a Sphinx
+extension to automatically generate boilerplate documentation that provides an
+overview of base classes, properties, public methods and special methods.
+
 Similar projects
 ----------------
 
@@ -411,6 +415,7 @@ This software is licensed under the `MIT license`_.
 .. _per user site-packages directory: https://www.python.org/dev/peps/pep-0370/
 .. _peter@peterodding.com: peter@peterodding.com
 .. _property: https://docs.python.org/2/library/functions.html#property
+.. _property_manager.sphinx: https://property-manager.readthedocs.org/en/latest/api.html#property_manager.sphinx
 .. _PropertyManager: https://property-manager.readthedocs.org/en/latest/api.html#property_manager.PropertyManager
 .. _PyPI: https://pypi.python.org/pypi/property-manager
 .. _Read the Docs: https://property-manager.readthedocs.org
