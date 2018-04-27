@@ -23,7 +23,6 @@ The entry point to this module is the :func:`setup()` function.
 """
 
 # Standard library modules.
-import logging
 import types
 
 # Modules included in our package.
@@ -31,8 +30,12 @@ from property_manager import PropertyManager, custom_property, lazy_property, re
 from humanfriendly import compact, concatenate, format
 from humanfriendly.tables import format_rst_table
 
-# Initialize a logger for this module.
-logger = logging.getLogger(__name__)
+# Public identifiers that require documentation.
+__all__ = (
+    'setup',
+    'append_property_docs',
+    'TypeInspector',
+)
 
 
 def setup(app):
@@ -71,7 +74,7 @@ def append_property_docs(app, what, name, obj, options, lines):
     The parameters expected by this function are those defined for Sphinx event
     callback functions (i.e. I'm not going to document them here :-).
     """
-    if isinstance(obj, types.TypeType) and issubclass(obj, PropertyManager):
+    if is_suitable_type(obj):
         paragraphs = []
         details = TypeInspector(type=obj)
         hints = (details.required_hint, details.initializer_hint)
@@ -84,6 +87,13 @@ def append_property_docs(app, what, name, obj, options, lines):
         if lines:
             lines.append('')
         lines.extend('\n\n'.join(paragraphs).splitlines())
+
+
+def is_suitable_type(obj):
+    try:
+        return issubclass(obj, PropertyManager)
+    except Exception:
+        return False
 
 
 class TypeInspector(PropertyManager):
