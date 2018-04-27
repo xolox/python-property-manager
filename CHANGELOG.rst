@@ -11,6 +11,17 @@ to `semantic versioning`_.
 .. _Keep a Changelog: http://keepachangelog.com/
 .. _semantic versioning: http://semver.org/
 
+`Release 2.3`_ (2018-04-27)
+---------------------------
+
+- Added ``property_manager.sphinx`` module to automatically generate boilerplate documentation.
+- Added ``license`` and removed ``test_suite`` key in ``setup.py`` script.
+- Include documentation in source distributions.
+- Change Sphinx documentation theme.
+- Added this changelog.
+
+.. _Release 2.3: https://github.com/xolox/python-property-manager/compare/2.2...2.3
+
 `Release 2.2`_ (2017-06-29)
 ---------------------------
 
