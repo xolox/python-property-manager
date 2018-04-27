@@ -3,7 +3,7 @@
 """Setup script for the `property-manager` package."""
 
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: June 29, 2017
+# Last Change: April 27, 2018
 # URL: https://property-manager.readthedocs.org
 
 # Standard library modules.
@@ -57,7 +57,6 @@ setup(name="property-manager",
       packages=find_packages(),
       install_requires=get_requirements('requirements.txt'),
       tests_require=get_requirements('requirements-tests.txt'),
-      test_suite='property_manager.tests',
       classifiers=[
           'Development Status :: 5 - Production/Stable',
           'Intended Audience :: Developers',
