@@ -383,9 +383,9 @@ Contact
 -------
 
 The latest version of `property-manager` is available on PyPI_ and GitHub_. The
-documentation is hosted on `Read the Docs`_. For bug reports please create an
-issue on GitHub_. If you have questions, suggestions, etc. feel free to send me
-an e-mail at `peter@peterodding.com`_.
+documentation is hosted on `Read the Docs`_ and includes a changelog_. For bug
+reports please create an issue on GitHub_. If you have questions, suggestions,
+etc. feel free to send me an e-mail at `peter@peterodding.com`_.
 
 License
 -------
@@ -398,6 +398,7 @@ This software is licensed under the `MIT license`_.
 .. External references:
 .. _42: https://en.wikipedia.org/wiki/42_(number)#The_Hitchhiker.27s_Guide_to_the_Galaxy
 .. _cached_property: https://property-manager.readthedocs.org/en/latest/api.html#property_manager.cached_property
+.. _changelog: https://property-manager.readthedocs.org/en/latest/changelog.html
 .. _clear_cached_properties(): https://property-manager.readthedocs.org/en/latest/api.html#property_manager.PropertyManager.clear_cached_properties
 .. _custom_property: https://property-manager.readthedocs.org/en/latest/api.html#property_manager.custom_property
 .. _descriptor protocol: https://docs.python.org/2/howto/descriptor.html

@@ -1,30 +1,32 @@
 Documentation for property-manager
 ==================================
 
-Welcome to the documentation for version |release| of the `property-manager`
-package.
+Welcome to the documentation of `property-manager` version |release|!
+The following sections are available:
 
-Introduction & usage
---------------------
+.. contents::
+   :local:
 
-The first part of the documentation is the readme which explains how to install
-the `property-manager` package and how to get started based on some simple
-examples:
+User documentation
+------------------
+
+The readme is the best place to start reading and provides examples:
 
 .. toctree::
-
    readme.rst
 
 API documentation
 -----------------
 
-The second part of the documentation is the API documentation, extracted from
-the project source code using Sphinx:
+The following API documentation is automatically generated from the source code:
 
 .. toctree::
-
    api.rst
 
+Change log
+----------
 
-.. External references:
-.. _property: https://docs.python.org/2/library/functions.html#property
+The change log lists notable changes to the project:
+
+.. toctree::
+   changelog.rst
