@@ -11,6 +11,15 @@ to `semantic versioning`_.
 .. _Keep a Changelog: http://keepachangelog.com/
 .. _semantic versioning: http://semver.org/
 
+`Release 2.3.1`_ (2018-05-19)
+-----------------------------
+
+Minor bug fix release to sort the property names in the overview appended to
+class docstrings (I'm not sure what the implicit order was but it definitely
+wasn't alphabetical :-p).
+
+.. _Release 2.3.1: https://github.com/xolox/python-property-manager/compare/2.3...2.3.1
+
 `Release 2.3`_ (2018-04-27)
 ---------------------------
 

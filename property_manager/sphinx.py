@@ -1,7 +1,7 @@
 # Useful property variants for Python programming.
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: April 27, 2018
+# Last Change: May 19, 2018
 # URL: https://property-manager.readthedocs.org
 
 """
@@ -186,8 +186,8 @@ class TypeInspector(PropertyManager):
 
     def format_methods(self, names):
         """Format a list of method names as reStructuredText."""
-        return concatenate(format(":func:`%s()`", n) for n in names)
+        return concatenate(format(":func:`%s()`", n) for n in sorted(names))
 
     def format_properties(self, names):
         """Format a list of property names as reStructuredText."""
-        return concatenate(format(":attr:`%s`", n) for n in names)
+        return concatenate(format(":attr:`%s`", n) for n in sorted(names))

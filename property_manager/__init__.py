@@ -1,7 +1,7 @@
 # Useful property variants for Python programming.
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: April 27, 2018
+# Last Change: May 19, 2018
 # URL: https://property-manager.readthedocs.org
 
 """
@@ -98,7 +98,7 @@ except NameError:
     # Alias basestring to str in Python 3.
     basestring = str
 
-__version__ = '2.3'
+__version__ = '2.3.1'
 """Semi-standard module versioning."""
 
 SPHINX_ACTIVE = 'sphinx' in sys.modules
