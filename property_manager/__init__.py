@@ -82,7 +82,10 @@ Classes
 """
 
 # Standard library modules.
-import collections
+try:
+    from collections.abc import Hashable
+except ImportError:
+    from collections import Hashable
 import os
 import sys
 import textwrap
@@ -811,7 +814,7 @@ class custom_property(property):
                 # Check if we're setting a key property during initialization.
                 if self.key and obj.__dict__.get(self.__name__, None) is None:
                     # Make sure we were given a hashable value.
-                    if not isinstance(value, collections.Hashable):
+                    if not isinstance(value, Hashable):
                         msg = "Invalid value for key property '%s'! (expected hashable object, got %r instead)"
                         raise ValueError(msg % (self.__name__, value))
                     # Set the key property's value.
