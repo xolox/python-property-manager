@@ -401,24 +401,24 @@ This software is licensed under the `MIT license`_.
 
 .. External references:
 .. _42: https://en.wikipedia.org/wiki/42_(number)#The_Hitchhiker.27s_Guide_to_the_Galaxy
-.. _cached_property: https://property-manager.readthedocs.org/en/latest/api.html#property_manager.cached_property
-.. _changelog: https://property-manager.readthedocs.org/en/latest/changelog.html
-.. _clear_cached_properties(): https://property-manager.readthedocs.org/en/latest/api.html#property_manager.PropertyManager.clear_cached_properties
-.. _custom_property: https://property-manager.readthedocs.org/en/latest/api.html#property_manager.custom_property
+.. _cached_property: https://property-manager.readthedocs.io/en/latest/api.html#property_manager.cached_property
+.. _changelog: https://property-manager.readthedocs.io/en/latest/changelog.html
+.. _clear_cached_properties(): https://property-manager.readthedocs.io/en/latest/api.html#property_manager.PropertyManager.clear_cached_properties
+.. _custom_property: https://property-manager.readthedocs.io/en/latest/api.html#property_manager.custom_property
 .. _descriptor protocol: https://docs.python.org/2/howto/descriptor.html
-.. _documentation: https://property-manager.readthedocs.org
+.. _documentation: https://property-manager.readthedocs.io
 .. _executor: https://executor.readthedocs.org/en/latest/
 .. _GitHub: https://github.com/xolox/python-property-manager
-.. _lazy_property: https://property-manager.readthedocs.org/en/latest/api.html#property_manager.lazy_property
+.. _lazy_property: https://property-manager.readthedocs.io/en/latest/api.html#property_manager.lazy_property
 .. _MIT license: http://en.wikipedia.org/wiki/MIT_License
-.. _mutable_property: https://property-manager.readthedocs.org/en/latest/api.html#property_manager.mutable_property
+.. _mutable_property: https://property-manager.readthedocs.io/en/latest/api.html#property_manager.mutable_property
 .. _per user site-packages directory: https://www.python.org/dev/peps/pep-0370/
 .. _peter@peterodding.com: peter@peterodding.com
 .. _property: https://docs.python.org/2/library/functions.html#property
-.. _property_manager.sphinx: https://property-manager.readthedocs.org/en/latest/api.html#property_manager.sphinx
-.. _PropertyManager: https://property-manager.readthedocs.org/en/latest/api.html#property_manager.PropertyManager
+.. _property_manager.sphinx: https://property-manager.readthedocs.io/en/latest/api.html#property_manager.sphinx
+.. _PropertyManager: https://property-manager.readthedocs.io/en/latest/api.html#property_manager.PropertyManager
 .. _PyPI: https://pypi.python.org/pypi/property-manager
-.. _Read the Docs: https://property-manager.readthedocs.org
-.. _required_property: https://property-manager.readthedocs.org/en/latest/api.html#property_manager.required_property
+.. _Read the Docs: https://property-manager.readthedocs.io
+.. _required_property: https://property-manager.readthedocs.io/en/latest/api.html#property_manager.required_property
 .. _virtual environments: http://docs.python-guide.org/en/latest/dev/virtualenvs/
-.. _writable_property: https://property-manager.readthedocs.org/en/latest/api.html#property_manager.writable_property
+.. _writable_property: https://property-manager.readthedocs.io/en/latest/api.html#property_manager.writable_property

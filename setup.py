@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 
-"""Setup script for the `property-manager` package."""
-
+# Setup script for the property-manager package.
+#
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: April 27, 2018
-# URL: https://property-manager.readthedocs.org
+# Last Change: March 2, 2020
+# URL: https://property-manager.readthedocs.io
 
 # Standard library modules.
 import codecs
@@ -51,7 +51,7 @@ setup(name="property-manager",
       description=("Useful property variants for Python programming (required"
                    " properties, writable properties, cached properties, etc)"),
       long_description=get_contents('README.rst'),
-      url='https://property-manager.readthedocs.org',
+      url='https://property-manager.readthedocs.io',
       author="Peter Odding",
       author_email='peter@peterodding.com',
       license='MIT',

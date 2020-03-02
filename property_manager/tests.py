@@ -2,7 +2,7 @@
 #
 # Author: Peter Odding <peter@peterodding.com>
 # Last Change: April 27, 2018
-# URL: https://property-manager.readthedocs.org
+# URL: https://property-manager.readthedocs.io
 
 """Automated tests for the :mod:`property_manager` module."""
 

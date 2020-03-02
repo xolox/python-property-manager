@@ -2,7 +2,7 @@
 #
 # Author: Peter Odding <peter@peterodding.com>
 # Last Change: May 19, 2018
-# URL: https://property-manager.readthedocs.org
+# URL: https://property-manager.readthedocs.io
 
 """
 Integration with the Sphinx_ documentation generator.
