@@ -71,9 +71,9 @@ Logging
 =======
 
 The :mod:`property_manager` module emits log messages at the custom log level
-:data:`~verboselogs.SPAM` which is considered *more* verbose than
-:data:`~logging.DEBUG`, so if you want these messages to be logged
-make sure they're not being ignored based on their level.
+:data:`~verboselogs.SPAM` which is considered *more* verbose than :mod:`DEBUG
+<logging>`, so if you want these messages to be logged make sure they're not
+being ignored based on their level.
 
 Classes
 =======
