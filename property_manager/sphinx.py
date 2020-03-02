@@ -77,13 +77,15 @@ def append_property_docs(app, what, name, obj, options, lines):
     if is_suitable_type(obj):
         paragraphs = []
         details = TypeInspector(type=obj)
-        hints = (details.required_hint, details.initializer_hint)
-        if any(hints):
-            paragraphs.append(' '.join(h for h in hints if h))
         paragraphs.append(format("Here's an overview of the :class:`%s` class:", obj.__name__))
         # Whitespace in labels is replaced with non breaking spaces to disable wrapping of the label text.
         data = [(format("%s:", label.replace(' ', u'\u00A0')), text) for label, text in details.overview if text]
         paragraphs.append(format_rst_table(data))
+        # Append any hints after the overview.
+        hints = (details.required_hint, details.initializer_hint)
+        if any(hints):
+            paragraphs.append(' '.join(h for h in hints if h))
+        # Insert padding between the regular docstring and generated content.
         if lines:
             lines.append('')
         lines.extend('\n\n'.join(paragraphs).splitlines())

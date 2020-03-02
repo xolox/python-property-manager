@@ -404,14 +404,14 @@ class PropertyManagerTestCase(unittest.TestCase):
         assert len(lines) > 0
         assert lines[0] == "Some boring description."
         assert not lines[1]
-        assert lines[2] == compact("""
+        assert lines[2] == "Here's an overview of the :class:`TypeInspector` class:"
+        assert not lines[3]
+        assert lines[-1] == compact("""
             When you initialize a :class:`TypeInspector` object you are
             required to provide a value for the :attr:`type` property. You can
             set the value of the :attr:`type` property by passing a keyword
             argument to the class initializer.
         """)
-        assert not lines[3]
-        assert lines[4] == "Here's an overview of the :class:`TypeInspector` class:"
 
     def test_init_sorting(self):
         """Make sure __init__() is sorted before other special methods."""
