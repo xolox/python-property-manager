@@ -1,7 +1,7 @@
 # Tests of custom properties for Python programming.
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: April 27, 2018
+# Last Change: March 2, 2020
 # URL: https://property-manager.readthedocs.io
 
 """Automated tests for the :mod:`property_manager` module."""
@@ -15,7 +15,7 @@ import unittest
 
 # External dependencies.
 import coloredlogs
-from humanfriendly import compact, format
+from humanfriendly.text import compact, format
 from verboselogs import VerboseLogger
 
 # Modules included in our package.

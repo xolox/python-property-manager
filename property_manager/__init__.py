@@ -1,7 +1,7 @@
 # Useful property variants for Python programming.
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: May 19, 2018
+# Last Change: March 2, 2020
 # URL: https://property-manager.readthedocs.io
 
 """
@@ -88,7 +88,8 @@ import sys
 import textwrap
 
 # External dependencies.
-from humanfriendly import coerce_boolean, compact, concatenate, format, pluralize
+from humanfriendly import coerce_boolean
+from humanfriendly.text import compact, concatenate, format, pluralize
 from verboselogs import VerboseLogger
 
 try:

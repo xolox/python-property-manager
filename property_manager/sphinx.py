@@ -1,7 +1,7 @@
 # Useful property variants for Python programming.
 #
 # Author: Peter Odding <peter@peterodding.com>
-# Last Change: May 19, 2018
+# Last Change: March 2, 2020
 # URL: https://property-manager.readthedocs.io
 
 """
@@ -27,8 +27,8 @@ import types
 
 # Modules included in our package.
 from property_manager import PropertyManager, custom_property, lazy_property, required_property
-from humanfriendly import compact, concatenate, format
 from humanfriendly.tables import format_rst_table
+from humanfriendly.text import compact, concatenate, format
 
 # Public identifiers that require documentation.
 __all__ = (
