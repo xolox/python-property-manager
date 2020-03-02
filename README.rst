@@ -4,8 +4,8 @@ property-manager: Useful property variants for Python programming
 .. image:: https://travis-ci.org/xolox/python-property-manager.svg?branch=master
    :target: https://travis-ci.org/xolox/python-property-manager
 
-.. image:: https://coveralls.io/repos/xolox/python-property-manager/badge.png?branch=master
-   :target: https://coveralls.io/r/xolox/python-property-manager?branch=master
+.. image:: https://coveralls.io/repos/github/xolox/python-property-manager/badge.svg?branch=master
+   :target: https://coveralls.io/github/xolox/python-property-manager?branch=master
 
 The `property-manager` package defines several custom property_ variants for
 Python programming including required properties, writable properties, cached
