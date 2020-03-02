@@ -9,8 +9,8 @@ property-manager: Useful property variants for Python programming
 
 The `property-manager` package defines several custom property_ variants for
 Python programming including required properties, writable properties, cached
-properties, etc. It's currently tested on Python 2.6, 2.7, 3.4, 3.5, 3.6 and
-PyPy. For usage instructions please refer to the documentation_.
+properties, etc. It's currently tested on Python 2.7, 3.5, 3.6 and PyPy. For
+usage instructions please refer to the documentation_.
 
 .. contents::
    :local:
