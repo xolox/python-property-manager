@@ -105,7 +105,7 @@ except NameError:
     # Alias basestring to str in Python 3.
     basestring = str
 
-__version__ = '2.3.1'
+__version__ = '3.0'
 """Semi-standard module versioning."""
 
 SPHINX_ACTIVE = 'sphinx' in sys.modules

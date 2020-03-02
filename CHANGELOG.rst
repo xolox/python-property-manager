@@ -11,6 +11,30 @@ to `semantic versioning`_.
 .. _Keep a Changelog: http://keepachangelog.com/
 .. _semantic versioning: http://semver.org/
 
+`Release 3.0`_ (2020-03-02)
+---------------------------
+
+No exciting changes, mostly just project maintenance 😇.
+
+- Merge pull request `#2`_: Fix deprecation warnings caused by importing
+  :class:`python2:collections.Hashable` on Python 3.3+ (fixes issue `#1`_).
+
+- Drop support for Python 2.6 and 3.4, start testing on 3.7 and 3.8.
+
+- Change order of hints & overview in generated documentation.
+
+- Updated to :pypi:`humanfriendly` 8.0 (to fix deprecated imports).
+
+- Updated the ``Makefile`` to use Python 3 for local development.
+
+- Switched the coveralls badge in the readme to SVG.
+
+- Changed the Read the Docs base URL.
+
+.. _Release 3.0: https://github.com/xolox/python-property-manager/compare/2.3.1...3.0
+.. _#1: https://github.com/xolox/python-property-manager/issues/1
+.. _#2: https://github.com/xolox/python-property-manager/pull/2
+
 `Release 2.3.1`_ (2018-05-19)
 -----------------------------
 
